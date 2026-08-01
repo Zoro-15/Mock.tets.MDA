@@ -57,7 +57,7 @@ html[data-theme="light"] {
   --warning-custom: #b45309;
   --danger-custom: #b91c1c;
   --text-primary-custom: #111827;
-  --text-secondary-custom: #bbc5d3;
+  --text-secondary-custom: #0c0d0e;
 }
 
 html[data-theme="light"] .border-\[\#334155\] {
