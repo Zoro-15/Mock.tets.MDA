@@ -386,10 +386,10 @@ function ActiveTestContent() {
       </header>
 
       {/* Main Grid Section */}
-      <div className="max-w-7xl w-full mx-auto px-4 py-6 flex-1 flex flex-col md:flex-row gap-6 overflow-hidden">
+      <div className="max-w-7xl w-full mx-auto px-4 py-6 flex-1 flex flex-col md:flex-row gap-6">
         
         {/* Left Side: Question Panel */}
-        <div className="flex-1 flex flex-col justify-between space-y-6 md:max-h-[calc(100vh-140px)] md:overflow-y-auto pr-1">
+        <div className="flex-1 flex flex-col justify-between space-y-6 pr-1">
           {activeQuestion ? (
             <div className="space-y-6">
               {/* Question Card */}

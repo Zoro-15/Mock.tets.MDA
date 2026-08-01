@@ -98,7 +98,7 @@ export default function LatexRenderer({ text }: LatexRendererProps) {
   return (
     <span 
       dangerouslySetInnerHTML={{ __html: html }} 
-      className="inline-block max-w-full overflow-x-auto vertical-middle align-middle" 
+      className="vertical-middle align-middle" 
     />
   );
 }
