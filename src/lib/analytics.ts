@@ -10,16 +10,25 @@ export interface TopicInsight {
   accuracy: number; // percentage
 }
 
-// Simple but extremely fast keyword matcher for NDA syllabus
+// Highly granular keyword matcher for chapter-wise NDA syllabus
 const TOPIC_KEYWORDS: Record<string, string[]> = {
-  'Algebra & Matrices': ['matrix', 'determinant', 'equation', 'roots', 'quadratic', 'complex number', 'set', 'relation', 'function', 'binomial', 'progression'],
-  'Trigonometry': ['sin', 'cos', 'tan', 'triangle', 'angle', 'radian', 'height', 'distance', 'inverse'],
-  'Calculus': ['derivative', 'integral', 'limit', 'continuous', 'differentiable', 'dy/dx', 'area under', 'differential equation'],
-  'Geometry & Vectors': ['line', 'plane', 'circle', 'parabola', 'ellipse', 'hyperbola', 'vector', 'magnitude', 'direction ratio'],
-  'Stats & Probability': ['mean', 'median', 'mode', 'variance', 'standard deviation', 'probability', 'dice', 'coin', 'card', 'mutually exclusive'],
+  'Matrices & Determinants': ['matrix', 'determinant', 'adjoint', 'inverse matrix', 'singular'],
+  'Sets, Relations & Functions': ['set', 'relation', 'function', 'subset', 'domain', 'range', 'injective', 'surjective'],
+  'Complex Numbers': ['complex number', 'iota', 'argand', 'modulus', 'argument', 'conjugate'],
+  'Quadratic Equations': ['quadratic', 'roots', 'polynomial equation'],
+  'Sequence & Series': ['progression', 'arithmetic', 'geometric', 'harmonic', 'series', 'sequence', 'a.p', 'g.p', 'sum to n terms'],
+  'Permutations & Combinations': ['permutation', 'combination', 'arrange', 'select', 'factorial', 'ways to choose'],
+  'Binomial Theorem': ['binomial', 'expansion', 'coefficient'],
+  'Logarithms': ['logarithm', 'log ', 'ln '],
+  'Trigonometry': ['sin', 'cos', 'tan', 'triangle', 'angle', 'radian', 'height', 'distance', 'inverse', 'sec', 'csc', 'cot'],
+  'Differential Calculus': ['derivative', 'limit', 'continuous', 'differentiable', 'dy/dx', 'maxima', 'minima', 'tangent', 'normal'],
+  'Integral Calculus': ['integral', 'integrate', 'area under', 'differential equation', 'dx'],
+  '2D & 3D Geometry': ['line', 'plane', 'circle', 'parabola', 'ellipse', 'hyperbola', 'coordinate', 'distance formula', 'direction ratio', 'direction cosine'],
+  'Vector Algebra': ['vector', 'magnitude', 'dot product', 'cross product', 'scalar triple', 'coplanar'],
+  'Statistics & Probability': ['mean', 'median', 'mode', 'variance', 'standard deviation', 'probability', 'dice', 'coin', 'card', 'mutually exclusive', 'bayes'],
   'English Language': ['synonym', 'antonym', 'idiom', 'phrase', 'grammar', 'spot the error', 'sentence improvement', 'comprehension'],
-  'General Science': ['force', 'velocity', 'acceleration', 'light', 'sound', 'electricity', 'magnet', 'atom', 'molecule', 'acid', 'base', 'cell', 'disease'],
-  'General Studies': ['history', 'geography', 'polity', 'constitution', 'economy', 'current affairs', 'war', 'treaty', 'article']
+  'Physics & Chemistry': ['force', 'velocity', 'acceleration', 'light', 'sound', 'electricity', 'magnet', 'atom', 'molecule', 'acid', 'base', 'reaction', 'optics'],
+  'General Studies': ['history', 'geography', 'polity', 'constitution', 'economy', 'current affairs', 'war', 'treaty', 'article', 'cell', 'disease']
 };
 
 export function generateSubjectAnalytics(
