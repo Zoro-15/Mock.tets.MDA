@@ -13,6 +13,7 @@ import OptionCard from '../../components/OptionCard';
 import QuestionPalette from '../../components/QuestionPalette';
 import SubmitDialog from '../../components/SubmitDialog';
 import { preload } from 'swr';
+import { motion, AnimatePresence } from 'framer-motion';
 
 function ActiveTestContent() {
   const router = useRouter();
@@ -24,7 +25,9 @@ function ActiveTestContent() {
   const [questions, setQuestions] = useState<Question[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [responses, setResponses] = useState<Record<string, QuestionResponse>>({});
-  const [timeLeft, setTimeLeft] = useState(3600);
+  const [initialTime, setInitialTime] = useState(3600);
+  const timeLeftRef = useRef(3600);
+  const [expired, setExpired] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -64,7 +67,8 @@ function ActiveTestContent() {
 
           setCurrentIndex(att.currentQuestionIndex);
           setResponses(activeResponses);
-          setTimeLeft(att.timeLeft);
+          setInitialTime(att.timeLeft);
+          timeLeftRef.current = att.timeLeft;
           
           // Initialize timeSpentRef from loaded responses
           const initialTimeSpent: Record<string, number> = {};
@@ -103,7 +107,7 @@ function ActiveTestContent() {
       };
     });
 
-    await submitAttemptToSupabase(attemptId, finalResponses, timeLeft);
+    await submitAttemptToSupabase(attemptId, finalResponses, timeLeftRef.current);
     
     // Preload analysis data instantly using SWR
     preload(attemptId ? `analysis-${attemptId}` : null, async () => {
@@ -116,14 +120,14 @@ function ActiveTestContent() {
     });
     
     router.push(`/analysis?attemptId=${attemptId}`);
-  }, [attemptId, responses, timeLeft, router]);
+  }, [attemptId, responses, router]);
 
   // Expiry auto-submit
   useEffect(() => {
-    if (timeLeft <= 0 && !loading && attempt && !attempt.completed) {
+    if (expired && !loading && attempt && !attempt.completed) {
       handleFinalSubmit();
     }
-  }, [timeLeft, loading, attempt, handleFinalSubmit]);
+  }, [expired, loading, attempt, handleFinalSubmit]);
 
   // Refs for timer dependencies to avoid tearing down the interval
   const timerStateRef = useRef({ responses, currentIndex, activeQuestion, saveProgress });
@@ -131,46 +135,34 @@ function ActiveTestContent() {
     timerStateRef.current = { responses, currentIndex, activeQuestion, saveProgress };
   }, [responses, currentIndex, activeQuestion, saveProgress]);
 
-  // Clock tick interval
-  useEffect(() => {
-    if (loading || !attempt || attempt.completed || submitDialogOpen) return;
+  // Clock tick callback handled by Timer component
+  const handleTick = useCallback((newTime: number) => {
+    timeLeftRef.current = newTime;
+    const state = timerStateRef.current;
+    
+    if (newTime <= 0) {
+      setExpired(true);
+      return;
+    }
 
-    const timer = setInterval(() => {
-      const state = timerStateRef.current;
-      
-      // 1. Mutate timeSpentRef OUTSIDE the state updater to prevent React StrictMode double-ticks
+    if (state.activeQuestion) {
+      const currentQId = state.activeQuestion.id;
+      timeSpentRef.current[currentQId] = (timeSpentRef.current[currentQId] || 0) + 1;
+    }
+
+    // Auto-save every 10 seconds to localStorage
+    if (newTime > 0 && newTime % 10 === 0) {
+      const responsesToSave = { ...state.responses };
       if (state.activeQuestion) {
         const currentQId = state.activeQuestion.id;
-        timeSpentRef.current[currentQId] = (timeSpentRef.current[currentQId] || 0) + 1;
+        responsesToSave[currentQId] = {
+          ...responsesToSave[currentQId],
+          timeSpent: timeSpentRef.current[currentQId]
+        };
       }
-
-      // 2. Pure state updater
-      setTimeLeft((prev) => {
-        const nextTime = prev - 1;
-        
-        // Auto-save every 10 seconds to localStorage
-        if (nextTime % 10 === 0) {
-          const responsesToSave = { ...state.responses };
-          if (state.activeQuestion) {
-            const currentQId = state.activeQuestion.id;
-            responsesToSave[currentQId] = {
-              ...responsesToSave[currentQId],
-              timeSpent: timeSpentRef.current[currentQId]
-            };
-          }
-          
-          // Escape the state updater context to prevent double-saving in StrictMode
-          setTimeout(() => {
-            state.saveProgress(responsesToSave, nextTime, state.currentIndex);
-          }, 0);
-        }
-
-        return nextTime;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [loading, attempt, submitDialogOpen]);
+      state.saveProgress(responsesToSave, newTime, state.currentIndex);
+    }
+  }, []);
 
   // Action methods
   const selectOption = useCallback((optIdx: number) => {
@@ -190,8 +182,8 @@ function ActiveTestContent() {
     };
     
     setResponses(updated);
-    saveProgress(updated, timeLeft, currentIndex);
-  }, [activeQuestion, responses, timeLeft, currentIndex, saveProgress]);
+    saveProgress(updated, timeLeftRef.current, currentIndex);
+  }, [activeQuestion, responses, currentIndex, saveProgress]);
 
   const handleClearResponse = useCallback(() => {
     if (!activeQuestion) return;
@@ -210,8 +202,8 @@ function ActiveTestContent() {
     };
 
     setResponses(updated);
-    saveProgress(updated, timeLeft, currentIndex);
-  }, [activeQuestion, responses, timeLeft, currentIndex, saveProgress]);
+    saveProgress(updated, timeLeftRef.current, currentIndex);
+  }, [activeQuestion, responses, currentIndex, saveProgress]);
 
   const handleSaveAndNext = useCallback(() => {
     if (!activeQuestion) return;
@@ -237,13 +229,13 @@ function ActiveTestContent() {
       
       setResponses(updatedResponses);
       setCurrentIndex(nextIdx);
-      saveProgress(updatedResponses, timeLeft, nextIdx);
+      saveProgress(updatedResponses, timeLeftRef.current, nextIdx);
     } else {
       // Last question - just save progress
       setResponses(updatedResponses);
-      saveProgress(updatedResponses, timeLeft, currentIndex);
+      saveProgress(updatedResponses, timeLeftRef.current, currentIndex);
     }
-  }, [activeQuestion, responses, questions, timeLeft, currentIndex, saveProgress]);
+  }, [activeQuestion, responses, questions, currentIndex, saveProgress]);
 
   const handleMarkAndNext = useCallback(() => {
     if (!activeQuestion) return;
@@ -269,12 +261,12 @@ function ActiveTestContent() {
       }
       setResponses(updatedResponses);
       setCurrentIndex(nextIdx);
-      saveProgress(updatedResponses, timeLeft, nextIdx);
+      saveProgress(updatedResponses, timeLeftRef.current, nextIdx);
     } else {
       setResponses(updatedResponses);
-      saveProgress(updatedResponses, timeLeft, currentIndex);
+      saveProgress(updatedResponses, timeLeftRef.current, currentIndex);
     }
-  }, [activeQuestion, responses, questions, timeLeft, currentIndex, saveProgress]);
+  }, [activeQuestion, responses, questions, currentIndex, saveProgress]);
 
   const handleSelectIndex = (idx: number) => {
     // Save current question time spent before switching
@@ -297,7 +289,7 @@ function ActiveTestContent() {
 
     setResponses(updatedResponses);
     setCurrentIndex(idx);
-    saveProgress(updatedResponses, timeLeft, idx);
+    saveProgress(updatedResponses, timeLeftRef.current, idx);
   };
 
   // Keyboard Shortcuts Listener
@@ -329,7 +321,7 @@ function ActiveTestContent() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentIndex, questions, responses, timeLeft, selectOption, handleSaveAndNext, handleMarkAndNext, handleClearResponse]);
+  }, [currentIndex, questions, responses, selectOption, handleSaveAndNext, handleMarkAndNext, handleClearResponse]);
 
   if (loading) {
     return (
@@ -386,7 +378,7 @@ function ActiveTestContent() {
 
           <div className="flex items-center gap-3">
             {/* Timer component */}
-            <Timer timeLeft={timeLeft} />
+            <Timer initialTimeLeft={initialTime} onTick={handleTick} isPaused={loading || !attempt || attempt.completed || submitDialogOpen} />
 
             {/* Language Placeholder icon */}
             <div className="w-8 h-8 rounded-lg bg-[#0F172A]/40 border border-[#334155]/60 flex items-center justify-center text-[#CBD5E1]" title="English Only">
@@ -414,40 +406,49 @@ function ActiveTestContent() {
         
         {/* Left Side: Question Panel */}
         <div className="flex-1 flex flex-col justify-between space-y-6 pr-1">
-          {activeQuestion ? (
-            <div className="space-y-6">
-              {/* Section Header */}
-              {activeQuestion.section && (
-                <div className="bg-[#1E293B]/70 border border-[#334155]/60 rounded-xl px-4 py-2 inline-flex items-center gap-2">
-                  <span className="w-2 h-2 rounded-full bg-[#3B82F6]"></span>
-                  <span className="text-sm font-bold text-[#F8FAFC]">{activeQuestion.section}</span>
-                </div>
-              )}
-              {/* Question Card */}
-              <QuestionCard
-                question={activeQuestion}
-                questionNumber={currentIndex + 1}
-                timeSpent={timeSpentRef.current[activeQuestion.id] || 0}
-                positiveMarks={positiveMarks}
-                negativeMarks={test.negativeMarking}
-              />
+          <AnimatePresence mode="wait">
+            {activeQuestion ? (
+              <motion.div 
+                key={activeQuestion.id}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.2, ease: "easeOut" }}
+                className="space-y-6"
+              >
+                {/* Section Header */}
+                {activeQuestion.section && (
+                  <div className="bg-[#1E293B]/70 border border-[#334155]/60 rounded-xl px-4 py-2 inline-flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-[#3B82F6]"></span>
+                    <span className="text-sm font-bold text-[#F8FAFC]">{activeQuestion.section}</span>
+                  </div>
+                )}
+                {/* Question Card */}
+                <QuestionCard
+                  question={activeQuestion}
+                  questionNumber={currentIndex + 1}
+                  timeSpent={timeSpentRef.current[activeQuestion.id] || 0}
+                  positiveMarks={positiveMarks}
+                  negativeMarks={test.negativeMarking}
+                />
 
-              {/* Answer options */}
-              <div className="grid grid-cols-1 gap-4">
-                {activeQuestion.options.map((opt, i) => (
-                  <OptionCard
-                    key={i}
-                    label={['A', 'B', 'C', 'D'][i]}
-                    content={opt}
-                    isSelected={responses[activeQuestion.id]?.selectedOptionIndex === i}
-                    onClick={() => selectOption(i)}
-                  />
-                ))}
-              </div>
-            </div>
-          ) : (
-            <EmptyState title="End of Test" message="You have navigated past all questions. Open palette to submit." />
-          )}
+                {/* Answer options */}
+                <div className="grid grid-cols-1 gap-4">
+                  {activeQuestion.options.map((opt, i) => (
+                    <OptionCard
+                      key={i}
+                      label={['A', 'B', 'C', 'D'][i]}
+                      content={opt}
+                      isSelected={responses[activeQuestion.id]?.selectedOptionIndex === i}
+                      onClick={() => selectOption(i)}
+                    />
+                  ))}
+                </div>
+              </motion.div>
+            ) : (
+              <EmptyState title="End of Test" message="You have navigated past all questions. Open palette to submit." />
+            )}
+          </AnimatePresence>
 
           {/* Spacer to push buttons down */}
           <div className="flex-grow" />
@@ -508,7 +509,7 @@ function ActiveTestContent() {
       {/* Submit Confirmation dialog */}
       <SubmitDialog
         isOpen={submitDialogOpen}
-        timeLeft={timeLeft}
+        timeLeft={timeLeftRef.current}
         attemptedCount={attemptedCount}
         unattemptedCount={unattemptedCount}
         markedCount={markedCount}

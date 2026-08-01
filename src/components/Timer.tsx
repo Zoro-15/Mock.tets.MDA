@@ -1,10 +1,36 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 
 interface TimerProps {
-  timeLeft: number; // in seconds
+  initialTimeLeft: number; // in seconds
+  onTick?: (timeLeft: number) => void;
+  isPaused?: boolean;
 }
 
-export default function Timer({ timeLeft }: TimerProps) {
+export default function Timer({ initialTimeLeft, onTick, isPaused = false }: TimerProps) {
+  const [timeLeft, setTimeLeft] = useState(initialTimeLeft);
+
+  // Sync with external initial time if it changes
+  useEffect(() => {
+    setTimeLeft(initialTimeLeft);
+  }, [initialTimeLeft]);
+
+  useEffect(() => {
+    if (isPaused) return;
+
+    const timer = setInterval(() => {
+      setTimeLeft(prev => {
+        const nextTime = prev - 1;
+        if (onTick) {
+          // Push to macro-task queue to avoid synchronous state updates warning
+          setTimeout(() => onTick(nextTime), 0);
+        }
+        return nextTime;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [isPaused, onTick]);
+
   const formatTime = (totalSeconds: number) => {
     if (totalSeconds < 0) return "00:00:00";
     const hrs = Math.floor(totalSeconds / 3600);
@@ -15,7 +41,7 @@ export default function Timer({ timeLeft }: TimerProps) {
     return `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
   };
 
-  const isLowTime = timeLeft < 300; // < 5 minutes
+  const isLowTime = timeLeft > 0 && timeLeft < 300; // < 5 minutes
 
   return (
     <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border font-mono font-bold text-sm tracking-wide transition-colors ${

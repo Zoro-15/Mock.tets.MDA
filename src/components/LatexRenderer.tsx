@@ -17,7 +17,7 @@ function decodeHtmlEntities(str: string): string {
   }
 }
 
-export default function LatexRenderer({ text }: LatexRendererProps) {
+export default React.memo(function LatexRenderer({ text }: LatexRendererProps) {
   // 1. Clean up unreadable dark color styles and normalize double backslashes in math markers
   const cleanedText = text
     .replace(/color:\s*rgb\([^)]*\);?/gi, '')
@@ -80,4 +80,4 @@ export default function LatexRenderer({ text }: LatexRendererProps) {
       className="vertical-middle align-middle" 
     />
   );
-}
+});

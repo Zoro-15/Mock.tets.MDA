@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, Suspense, useTransition } from 'react';
+import React, { useState, Suspense, useTransition, useRef, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
@@ -18,7 +18,35 @@ function AnalysisContent() {
 
   const [activeTab, setActiveTab] = useState<'analysis' | 'solutions' | 'leaderboard'>('analysis');
   const [solutionFilter, setSolutionFilter] = useState<'all' | 'correct' | 'incorrect' | 'unattempted'>('all');
+  const [visibleCount, setVisibleCount] = useState(10);
   const [isPending, startTransition] = useTransition();
+  const observerTarget = useRef<HTMLDivElement>(null);
+
+  const handleFilterChange = (filter: 'all' | 'correct' | 'incorrect' | 'unattempted') => {
+    startTransition(() => {
+      setSolutionFilter(filter);
+      setVisibleCount(10);
+    });
+  };
+
+  useEffect(() => {
+    if (activeTab !== 'solutions' || isPending) return;
+    
+    const observer = new IntersectionObserver(
+      entries => {
+        if (entries[0].isIntersecting) {
+          setVisibleCount(prev => prev + 10);
+        }
+      },
+      { threshold: 0.1 }
+    );
+    
+    if (observerTarget.current) {
+      observer.observe(observerTarget.current);
+    }
+    
+    return () => observer.disconnect();
+  }, [activeTab, isPending]);
 
   const fetcher = async (id: string) => {
     const attemptIdStr = id.replace('analysis-', '');
@@ -91,6 +119,8 @@ function AnalysisContent() {
     if (solutionFilter === 'unattempted') return !isAnswered;
     return true; // 'all'
   });
+
+  const visibleQuestions = filteredQuestions.slice(0, visibleCount);
 
   return (
     <div className="min-h-screen bg-[#0F172A] text-[#F8FAFC]">
@@ -278,7 +308,7 @@ function AnalysisContent() {
                 return (
                   <button
                     key={filter.id}
-                    onClick={() => setSolutionFilter(filter.id)}
+                    onClick={() => handleFilterChange(filter.id)}
                     className={`px-4 py-1.5 rounded-full text-xs font-semibold border transition-all cursor-pointer outline-none ${
                       isActive 
                         ? 'bg-[#3B82F6] border-[#3B82F6] text-white' 
@@ -294,7 +324,7 @@ function AnalysisContent() {
             {/* Scrollable solutions list */}
             {filteredQuestions.length > 0 ? (
               <div className="space-y-6">
-                {filteredQuestions.map(({ q, idx }) => (
+                {visibleQuestions.map(({ q, idx }) => (
                   <div 
                     key={q.id} 
                     className="[content-visibility:auto] contain-intrinsic-size-[400px]"
@@ -306,6 +336,11 @@ function AnalysisContent() {
                     />
                   </div>
                 ))}
+                {visibleCount < filteredQuestions.length && (
+                  <div ref={observerTarget} className="py-6 flex justify-center">
+                    <LoadingSpinner />
+                  </div>
+                )}
               </div>
             ) : (
               <EmptyState title="No Solutions Match Filter" message="Select a different filter chip above to view explanations." />
