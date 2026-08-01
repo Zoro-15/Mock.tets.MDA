@@ -445,23 +445,28 @@ export async function submitAttemptToSupabase(
   // Send completed attempt to Supabase (Fire and Forget Background Sync)
   const currentUser = getCurrentUser();
   if (isSupabaseConfigured && supabase && currentUser) {
-    supabase
-      .from('test_attempts')
-      .upsert({
-        id: attemptId,
-        user_id: currentUser.id,
-        test_id: attempt.testId,
-        score: score,
-        correct_count: correctCount,
-        incorrect_count: incorrectCount,
-        unattempted_count: unattemptedCount,
-        accuracy: accuracy,
-        time_taken: attempt.timeTaken,
-        responses: responses,
-        completed_at: new Date().toISOString()
-      })
-      .then(() => console.log('[Background Sync] Successfully synced test attempt to Supabase'))
-      .catch((err) => console.error('Failed to submit attempt to Supabase:', err));
+    (async () => {
+      try {
+        await supabase
+          .from('test_attempts')
+          .upsert({
+            id: attemptId,
+            user_id: currentUser.id,
+            test_id: attempt.testId,
+            score: score,
+            correct_count: correctCount,
+            incorrect_count: incorrectCount,
+            unattempted_count: unattemptedCount,
+            accuracy: accuracy,
+            time_taken: attempt.timeTaken,
+            responses: responses,
+            completed_at: new Date().toISOString()
+          });
+        console.log('[Background Sync] Successfully synced test attempt to Supabase');
+      } catch (err) {
+        console.error('Failed to submit attempt to Supabase:', err);
+      }
+    })();
   }
 
   return attempt;

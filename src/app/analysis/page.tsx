@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState, Suspense, useTransition, useRef, useEffect } from 'react';
+import React, { useState, Suspense, useTransition, useRef, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import useSWR from 'swr';
 import { Attempt, Test, Question, LeaderboardEntry } from '../../lib/types';
 import { getAttempt, getTestById, getQuestionsForTest, getLeaderboardForTest } from '../../lib/db';
+import { generateSubjectAnalytics } from '../../lib/analytics';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import SkeletonLoader from '../../components/SkeletonLoader';
 import EmptyState from '../../components/EmptyState';
@@ -101,11 +102,13 @@ function AnalysisContent() {
     return `${mins}m ${s}s`;
   };
 
-  // Average time per question
+  // Derived states
   const attemptedCount = attempt.correctCount + attempt.incorrectCount;
-  const avgTime = attemptedCount > 0 
-    ? Math.round((attempt.timeTaken / attemptedCount) * 10) / 10 
-    : 0;
+  const avgTime = attemptedCount > 0 ? Math.round(attempt.timeTaken / attemptedCount) : 0;
+
+  const topicInsights = questions.length && attempt 
+    ? generateSubjectAnalytics(questions, attempt.responses)
+    : [];
 
   // Solution items based on filters
   const filteredQuestions = questions.map((q, idx) => ({ q, idx: idx + 1 })).filter(({ q }) => {
@@ -288,8 +291,39 @@ function AnalysisContent() {
                   </div>
                 </div>
               </div>
-
             </div>
+
+            {/* NEW: TOPIC INSIGHTS */}
+            <div className="bg-[#1E293B] border border-[#334155]/60 rounded-xl p-6 space-y-5">
+              <h3 className="text-sm font-bold text-[#F8FAFC] uppercase tracking-wider pb-2 border-b border-[#334155]/40">
+                Deep Topic Analytics
+              </h3>
+              
+              <div className="space-y-6">
+                {topicInsights.map(insight => (
+                  <div key={insight.topic} className="space-y-2">
+                    <div className="flex justify-between items-center text-sm font-semibold">
+                      <span className="text-[#F8FAFC]">{insight.topic} <span className="text-xs text-[#CBD5E1]/60 font-mono ml-1">({insight.total} Qs)</span></span>
+                      <span className={insight.accuracy >= 70 ? 'text-[#22C55E]' : insight.accuracy >= 40 ? 'text-[#F59E0B]' : 'text-[#EF4444]'}>
+                        {insight.accuracy}% Accuracy
+                      </span>
+                    </div>
+                    {/* Progress Bar */}
+                    <div className="w-full bg-[#0F172A] rounded-full h-2.5 overflow-hidden flex ring-1 ring-[#334155]/50">
+                      <div className="bg-[#22C55E] transition-all" style={{ width: `${(insight.correct / insight.total) * 100}%` }} title={`Correct: ${insight.correct}`} />
+                      <div className="bg-[#EF4444] transition-all" style={{ width: `${(insight.incorrect / insight.total) * 100}%` }} title={`Incorrect: ${insight.incorrect}`} />
+                    </div>
+                    {/* Tiny Stats */}
+                    <div className="flex justify-between text-[10px] font-mono text-[#CBD5E1]/70">
+                      <span className="text-[#22C55E]">{insight.correct} Correct</span>
+                      <span className="text-[#EF4444]">{insight.incorrect} Wrong</span>
+                      <span>{insight.unattempted} Skipped</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
           </div>
         )}
 
