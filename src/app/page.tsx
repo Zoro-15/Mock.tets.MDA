@@ -123,7 +123,7 @@ export default function HomePage() {
 
         {/* Continue Learning card */}
         {currentUser && (
-          <section className="bg-surface-custom/40 p-4 sm:p-6 border border-[#334155]/40 rounded-2xl">
+          <section className="space-y-4">
             {loading ? (
               <LoadingSpinner />
             ) : (
@@ -136,25 +136,27 @@ export default function HomePage() {
         <section className="space-y-4">
           <h2 className="text-lg font-bold text-text-primary-custom">Mock Test Library</h2>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="flex flex-col gap-4">
             
             {/* Previous Year Papers */}
             <Link 
               href="/previous-year"
-              className="group p-6 bg-surface-custom border border-[#334155]/60 rounded-2xl hover:border-primary-custom/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] transition-all hover:-translate-y-1 hover:scale-[1.02] flex flex-col justify-between h-52 relative overflow-hidden cursor-pointer"
+              className="group p-5 bg-surface-custom border border-[#334155]/40 rounded-xl hover:border-primary-custom/50 hover:shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all hover:scale-[1.01] flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer"
             >
-              <div className="space-y-2">
-                <div className="w-10 h-10 bg-primary-custom/10 rounded-xl flex items-center justify-center text-primary-custom group-hover:bg-primary-custom group-hover:text-white transition-colors duration-300">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 bg-primary-custom/10 rounded-xl flex items-center justify-center text-primary-custom group-hover:bg-primary-custom group-hover:text-white transition-colors duration-300 shrink-0 mt-0.5">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-text-primary-custom">Previous Year Papers</h3>
-                <p className="text-xs text-text-secondary-custom leading-relaxed">
-                  Practice actual questions from the official NDA exams (2015-2025).
-                </p>
+                <div className="space-y-1">
+                  <h3 className="text-base font-bold text-text-primary-custom">Previous Year Papers</h3>
+                  <p className="text-xs text-text-secondary-custom leading-relaxed">
+                    Practice actual questions from the official NDA exams (2015-2025).
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center justify-between text-primary-custom font-semibold text-sm pt-4 border-t border-[#334155]/40 mt-4">
+              <div className="flex items-center justify-between sm:justify-end gap-3 text-primary-custom font-semibold text-xs pt-3 sm:pt-0 border-t sm:border-t-0 border-[#334155]/20 mt-3 sm:mt-0 shrink-0">
                 <span>42 Papers Available</span>
                 <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
               </div>
@@ -163,20 +165,22 @@ export default function HomePage() {
             {/* Mathematics Super Pack */}
             <Link 
               href="/maths-pack"
-              className="group p-6 bg-surface-custom border border-[#334155]/60 rounded-2xl hover:border-primary-custom/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] transition-all hover:-translate-y-1 hover:scale-[1.02] flex flex-col justify-between h-52 relative overflow-hidden cursor-pointer"
+              className="group p-5 bg-surface-custom border border-[#334155]/40 rounded-xl hover:border-primary-custom/50 hover:shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all hover:scale-[1.01] flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer"
             >
-              <div className="space-y-2">
-                <div className="w-10 h-10 bg-primary-custom/10 rounded-xl flex items-center justify-center text-primary-custom group-hover:bg-primary-custom group-hover:text-white transition-colors duration-300">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 bg-primary-custom/10 rounded-xl flex items-center justify-center text-primary-custom group-hover:bg-primary-custom group-hover:text-white transition-colors duration-300 shrink-0 mt-0.5">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 15.75V18m-3-3.675v3.675m-3-3v3m3-10.75a9 9 0 1 1-9 9 9 9 0 0 1 9-9Z" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-text-primary-custom">Mathematics Super Pack</h3>
-                <p className="text-xs text-text-secondary-custom leading-relaxed">
-                  Sharpen mathematical formulas, matrices, derivatives, and vectors.
-                </p>
+                <div className="space-y-1">
+                  <h3 className="text-base font-bold text-text-primary-custom">Mathematics Super Pack</h3>
+                  <p className="text-xs text-text-secondary-custom leading-relaxed">
+                    Sharpen mathematical formulas, matrices, derivatives, and vectors.
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center justify-between text-primary-custom font-semibold text-sm pt-4 border-t border-[#334155]/40 mt-4">
+              <div className="flex items-center justify-between sm:justify-end gap-3 text-primary-custom font-semibold text-xs pt-3 sm:pt-0 border-t sm:border-t-0 border-[#334155]/20 mt-3 sm:mt-0 shrink-0">
                 <span>36 Chapter & Subject Tests</span>
                 <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
               </div>
@@ -185,20 +189,22 @@ export default function HomePage() {
             {/* Full Mock Tests */}
             <Link 
               href="/full-mocks"
-              className="group p-6 bg-surface-custom border border-[#334155]/60 rounded-2xl hover:border-primary-custom/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] transition-all hover:-translate-y-1 hover:scale-[1.02] flex flex-col justify-between h-52 relative overflow-hidden cursor-pointer"
+              className="group p-5 bg-surface-custom border border-[#334155]/40 rounded-xl hover:border-primary-custom/50 hover:shadow-[0_0_15px_rgba(59,130,246,0.1)] transition-all hover:scale-[1.01] flex flex-col sm:flex-row sm:items-center justify-between gap-4 cursor-pointer"
             >
-              <div className="space-y-2">
-                <div className="w-10 h-10 bg-primary-custom/10 rounded-xl flex items-center justify-center text-primary-custom group-hover:bg-primary-custom group-hover:text-white transition-colors duration-300">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 bg-primary-custom/10 rounded-xl flex items-center justify-center text-primary-custom group-hover:bg-primary-custom group-hover:text-white transition-colors duration-300 shrink-0 mt-0.5">
                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
                     <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 0 0 2.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 0 0-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75 2.25 2.25 0 0 0-.1-.664m-5.8 0A2.251 2.251 0 0 1 13.5 2.25H15c1.03 0 1.9.693 2.166 1.638m-7.377 12.408 9-9m-9 0 9 9" />
                   </svg>
                 </div>
-                <h3 className="text-lg font-bold text-text-primary-custom">Full Mock Tests</h3>
-                <p className="text-xs text-text-secondary-custom leading-relaxed">
-                  Simulate the actual 2.5-hour NDA paper under realistic exam pressure.
-                </p>
+                <div className="space-y-1">
+                  <h3 className="text-base font-bold text-text-primary-custom">Full Mock Tests</h3>
+                  <p className="text-xs text-text-secondary-custom leading-relaxed">
+                    Simulate the actual 2.5-hour NDA paper under realistic exam pressure.
+                  </p>
+                </div>
               </div>
-              <div className="flex items-center justify-between text-primary-custom font-semibold text-sm pt-4 border-t border-[#334155]/40 mt-4">
+              <div className="flex items-center justify-between sm:justify-end gap-3 text-primary-custom font-semibold text-xs pt-3 sm:pt-0 border-t sm:border-t-0 border-[#334155]/20 mt-3 sm:mt-0 shrink-0">
                 <span>16 Full Length Mock Tests</span>
                 <span className="group-hover:translate-x-1 transition-transform">&rarr;</span>
               </div>

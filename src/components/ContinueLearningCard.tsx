@@ -34,19 +34,6 @@ export default function ContinueLearningCard({ unfinishedAttempt, test }: Contin
       {/* Motivation Toggle Header */}
       <div className="flex items-center justify-between">
         <h2 className="text-lg font-semibold text-text-primary-custom">Your Progress</h2>
-        <div className="flex items-center gap-2">
-          <span className="text-xs text-text-secondary-custom">Daily Motivation</span>
-          <button 
-            onClick={() => setShowQuote(!showQuote)}
-            className={`w-9 h-5 rounded-full p-0.5 transition-colors cursor-pointer duration-200 outline-none ${
-              showQuote ? 'bg-primary-custom' : 'bg-[#334155]'
-            }`}
-          >
-            <div className={`w-4 h-4 rounded-full bg-white transition-transform duration-200 ${
-              showQuote ? 'translate-x-4' : 'translate-x-0'
-            }`} />
-          </button>
-        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -95,38 +82,28 @@ export default function ContinueLearningCard({ unfinishedAttempt, test }: Contin
         )}
 
         {/* Motivation Card */}
-        <div className={`p-6 bg-gradient-to-br from-surface-custom to-background-custom border border-[#334155]/60 rounded-2xl flex flex-col justify-between transition-all duration-300 ${
-          showQuote ? 'opacity-100 scale-100' : 'opacity-40 pointer-events-none'
-        }`}>
+        <div className="p-6 bg-gradient-to-br from-surface-custom to-background-custom border border-[#334155]/60 rounded-2xl flex flex-col justify-between transition-all duration-300">
           <div>
             <div className="flex items-center justify-between">
               <span className="text-xs font-semibold text-primary-custom tracking-wider uppercase">
                 Officer's Mindset
               </span>
-              {showQuote && (
-                <button 
-                  onClick={refreshQuote}
-                  className="text-xs text-text-secondary-custom hover:text-primary-custom cursor-pointer flex items-center gap-1 transition-colors outline-none"
-                  title="Next Quote"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-                  </svg>
-                  <span>Shuffle</span>
-                </button>
-              )}
+              <button 
+                onClick={refreshQuote}
+                className="text-xs text-text-secondary-custom hover:text-primary-custom cursor-pointer flex items-center gap-1 transition-colors outline-none"
+                title="Next Quote"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                </svg>
+                <span>Shuffle</span>
+              </button>
             </div>
             
             <div className="mt-4 min-h-[72px]">
-              {showQuote ? (
-                <blockquote className="text-text-primary-custom italic font-medium border-l-2 border-primary-custom pl-4 py-1 leading-relaxed text-sm">
-                  "{quote}"
-                </blockquote>
-              ) : (
-                <p className="text-xs text-text-secondary-custom/60 italic pl-4 py-1">
-                  Motivation toggle is off. Focus on your discipline.
-                </p>
-              )}
+              <blockquote className="text-text-primary-custom italic font-medium border-l-2 border-primary-custom pl-4 py-1 leading-relaxed text-sm">
+                "{quote}"
+              </blockquote>
             </div>
           </div>
 
