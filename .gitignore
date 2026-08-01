@@ -58,3 +58,6 @@ pnpm-debug.log*
 # pnpm lockfile and workspace config
 pnpm-lock.yaml
 pnpm-workspace.yaml
+
+# package-lock.json
+package-lock.json

@@ -6,50 +6,112 @@ export const previousYearPapers: Test[] = [];
 // Helper to find exact database source file names for PYPs
 function getPypSourceFileName(year: number, half: string, subCategory: 'math' | 'gat'): string | undefined {
   if (subCategory === 'math') {
-    if (year === 2025 && half === 'II') {
-      return "NDA_II_2025_Mathematics_Official_Paper_Held_On_14_Sept_2025_.html";
-    } else if (year === 2024 && half === 'II') {
-      return "NDA-II 2024 _Maths_ Official Paper _Held On_ 01 Sept_ 2024_.html";
-    } else if (year === 2017 && half === 'II') {
-      return "NDA Mathematics 10 Sept 2017 Official Paper.html";
-    } else if (year === 2016 && half === 'I') {
-      return "NDA Mathematics 17 April 2016 Official Paper.html";
-    } else if (year === 2021 && half === 'I') {
-      return "NDA Mathematics 18 Apr 2021 Official Paper.html";
-    } else if (year === 2020 && half === 'II') {
+    if (year === 2025) {
+      return half === 'II' 
+        ? "NDA_II_2025_Mathematics_Official_Paper_Held_On_14_Sept_2025_.html"
+        : "NDA_I_2025_Mathematics_Official_Paper_Held_On_13_Apr_2025_.html";
+    }
+    if (year === 2024) {
+      return half === 'II'
+        ? "NDA-II 2024 _Maths_ Official Paper _Held On_ 01 Sept_ 2024_.html"
+        : "NDA_I_2024_Mathematics_Official_Paper_Held_On_21_Apr_2024_.html";
+    }
+    if (year === 2023) {
+      return half === 'II'
+        ? "NDA Mathematics 3 Sep 2023 Official Paper.html"
+        : "NDA Mathematics 16 April 2023 Official Paper.html";
+    }
+    if (year === 2022) {
+      return half === 'II'
+        ? "NDA Mathematics 4 Sep 2022 Official Paper.html"
+        : "NDA Mathematics 10 April 2022 Official Paper.html";
+    }
+    if (year === 2021) {
+      return half === 'II'
+        ? "NDA Mathematics 14 Nov 2021 Official Paper.html"
+        : "NDA Mathematics 18 Apr 2021 Official Paper.html";
+    }
+    if (year === 2020) {
       return "NDA Mathematics 6 Sep 2020 Official Paper.html";
-    } else if (year === 2018 && half === 'II') {
-      return "NDA Mathematics 9 Sept 2018 Official Paper.html";
+    }
+    if (year === 2019) {
+      return half === 'II'
+        ? "NDA Mathematics 17 Nov 2019 Official Paper.html"
+        : "NDA Mathematics 21 Apr 2019 Official Paper.html";
+    }
+    if (year === 2018) {
+      return half === 'II'
+        ? "NDA Mathematics 9 Sept 2018 Official Paper.html"
+        : "NDA Mathematics 22 April 2018 Official Paper.html";
+    }
+    if (year === 2017) {
+      return half === 'II'
+        ? "NDA Mathematics 10 Sept 2017 Official Paper.html"
+        : "NDA Mathematics 23 April 2017 Official Paper.html";
+    }
+    if (year === 2016) {
+      return half === 'II'
+        ? "NDA Mathematics 18 Sept 2016 Official Paper.html"
+        : "NDA Mathematics 17 April 2016 Official Paper.html";
+    }
+    if (year === 2015) {
+      return half === 'II'
+        ? "NDA Mathematics 16 Dec 2015 Official Paper.html"
+        : "NDA Mathematics 19 April 2015 Official Paper.html";
     }
   } else {
-    if (year === 2022 && half === 'I') {
-      return "NDA General Ability Test 10 April 2022 Official Paper.html";
-    } else if (year === 2017 && half === 'II') {
-      return "NDA General Ability Test 10 Sept 2017 Official Paper.html";
-    } else if (year === 2021 && half === 'II') {
-      return "NDA General Ability Test 14 Nov 2021 Official Paper.html";
-    } else if (year === 2023 && half === 'I') {
-      return "NDA General Ability Test 16 April 2023 Official Paper.html";
-    } else if (year === 2015 && half === 'II') {
-      return "NDA General Ability Test 16 Dec 2015 Official Paper.html";
-    } else if (year === 2016 && half === 'I') {
-      return "NDA General Ability Test 17 April 2016 Official Paper.html";
-    } else if (year === 2019 && half === 'II') {
-      return "NDA General Ability Test 17 Nov 2019 Official Paper.html";
-    } else if (year === 2021 && half === 'I') {
-      return "NDA General Ability Test 18 Apr 2021 Official Paper.html";
-    } else if (year === 2016 && half === 'II') {
-      return "NDA General Ability Test 18 Sept 2016 Official Paper.html";
-    } else if (year === 2019 && half === 'I') {
-      return "NDA General Ability Test 21 April 2019 Official Paper.html";
-    } else if (year === 2018 && half === 'I') {
-      return "NDA General Ability Test 22 April 2018 Official Paper.html";
-    } else if (year === 2023 && half === 'II') {
-      return "NDA General Ability Test 3 Sep 2023 Official Paper.html";
-    } else if (year === 2020 && half === 'II') {
+    if (year === 2025) {
+      return half === 'II'
+        ? "NDA_II_2025_General_Ability_Test_Official_Paper_Held_On_14_Sept.html"
+        : "NDA-I 2025 _GAT_ Official Paper _Held On_ 13 Apr_ 2025_.html";
+    }
+    if (year === 2024) {
+      return half === 'II'
+        ? "NDA-II 2024 _GAT_ Official Paper _Held On_ 01 Sept_ 2024_.html"
+        : "NDA-I 2024 _GAT_ Official Paper _Held On_  21 April_ 2024_.html";
+    }
+    if (year === 2023) {
+      return half === 'II'
+        ? "NDA General Ability Test 3 Sep 2023 Official Paper.html"
+        : "NDA General Ability Test 16 April 2023 Official Paper.html";
+    }
+    if (year === 2022) {
+      return half === 'II'
+        ? "NDA General Ability Test 4 Sep 2022 Official Paper.html"
+        : "NDA General Ability Test 10 April 2022 Official Paper.html";
+    }
+    if (year === 2021) {
+      return half === 'II'
+        ? "NDA General Ability Test 14 Nov 2021 Official Paper.html"
+        : "NDA General Ability Test 18 Apr 2021 Official Paper.html";
+    }
+    if (year === 2020) {
       return "NDA General Ability Test 6 Sep 2020 Official Paper.html";
-    } else if (year === 2018 && half === 'II') {
-      return "NDA General Ability Test 9 Sept 2018 Official Paper.html";
+    }
+    if (year === 2019) {
+      return half === 'II'
+        ? "NDA General Ability Test 17 Nov 2019 Official Paper.html"
+        : "NDA General Ability Test 21 April 2019 Official Paper.html";
+    }
+    if (year === 2018) {
+      return half === 'II'
+        ? "NDA General Ability Test 9 Sept 2018 Official Paper.html"
+        : "NDA General Ability Test 22 April 2018 Official Paper.html";
+    }
+    if (year === 2017) {
+      return half === 'II'
+        ? "NDA General Ability Test 10 Sept 2017 Official Paper.html"
+        : "NDA General Ability Test 23 Apr 2017 Official Paper.html";
+    }
+    if (year === 2016) {
+      return half === 'II'
+        ? "NDA General Ability Test 18 Sept 2016 Official Paper.html"
+        : "NDA General Ability Test 17 April 2016 Official Paper.html";
+    }
+    if (year === 2015) {
+      return half === 'II'
+        ? "NDA General Ability Test 16 Dec 2015 Official Paper.html"
+        : "NDA General Ability Test 19 April 2015 Official Paper.html";
     }
   }
   return undefined;

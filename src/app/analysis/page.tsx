@@ -124,7 +124,7 @@ function AnalysisContent() {
         
         {/* Navigation Tabs */}
         <div className="flex border-b border-[#334155]">
-          {(['analysis', 'solutions', 'leaderboard'] as const).map((tab) => {
+          {(['analysis', 'solutions', leaderboard && leaderboard.length > 0 ? 'leaderboard' : null].filter(Boolean) as ('analysis' | 'solutions' | 'leaderboard')[]).map((tab) => {
             const isActive = activeTab === tab;
             return (
               <button

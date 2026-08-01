@@ -226,10 +226,16 @@ export async function getQuestionsForTest(testId: string): Promise<Question[]> {
               query = query.ilike('source_file', `%${test.title.replace(/NDA\s+/gi, '')}%`);
             }
           } else if (test.subCategory === 'subject') {
-            const match = test.title.match(/ST \d+: (.+)/);
-            const subjName = match ? match[1] : '';
-            if (subjName) {
-              query = query.ilike('source_file', `%${subjName}%`);
+            const match = test.title.match(/ST (\d+)/);
+            const num = match ? match[1] : '';
+            if (num) {
+              query = query.ilike('source_file', `%ST ${num}_%`);
+            } else {
+              const match2 = test.title.match(/ST \d+: (.+)/);
+              const subjName = match2 ? match2[1] : '';
+              if (subjName) {
+                query = query.ilike('source_file', `%${subjName}%`);
+              }
             }
           }
         } else if (test.category === 'pyp') {
@@ -243,9 +249,12 @@ export async function getQuestionsForTest(testId: string): Promise<Question[]> {
           const match = test.title.match(/Test (\d+)/);
           const num = match ? match[1] : '';
           const isMath = test.subCategory === 'math';
-          query = query.ilike('source_file', `%mock%`).ilike('source_file', isMath ? '%math%' : '%gat%');
           if (num) {
-            query = query.ilike('source_file', `%${num}%`);
+            query = query
+              .ilike('source_file', `%FT ${num}_%`)
+              .ilike('source_file', isMath ? '%math%' : '%general%');
+          } else {
+            query = query.ilike('source_file', isMath ? '%math%' : '%general%');
           }
         }
       }
@@ -278,7 +287,7 @@ export async function getQuestionsForTest(testId: string): Promise<Question[]> {
         // Map database columns to Question interface
         const mapped = isolatedData.map((row: any) => ({
           id: row.id.toString(),
-          type: row.question_text.includes('pmatrix') || row.question_text.includes('\\frac') ? 'latex' : 'text',
+          type: (row.question_text.includes('pmatrix') || row.question_text.includes('\\frac') ? 'latex' : 'text') as 'latex' | 'text',
           questionText: row.question_text,
           comprehension: row.comprehension || undefined,
           options: [row.option_1, row.option_2, row.option_3, row.option_4],
@@ -569,16 +578,8 @@ export async function getLeaderboardForTest(testId: string): Promise<Leaderboard
     }
   }
 
-  // Fallback to static leaderboard
-  const test = getTestById(testId);
-  const max = test ? test.marks : 300;
-  return [
-    { rank: 1, name: "Aditya Singh", score: Math.round(max * 0.92 * 100) / 100, accuracy: 95, timeTaken: "1h 45m" },
-    { rank: 2, name: "Vikram Rathore", score: Math.round(max * 0.88 * 100) / 100, accuracy: 92, timeTaken: "1h 50m" },
-    { rank: 3, name: "Neha Sharma", score: Math.round(max * 0.85 * 100) / 100, accuracy: 89, timeTaken: "1h 53m" },
-    { rank: 4, name: "Rahul Verma", score: Math.round(max * 0.81 * 100) / 100, accuracy: 86, timeTaken: "1h 48m" },
-    { rank: 5, name: "Karan Johar", score: Math.round(max * 0.78 * 100) / 100, accuracy: 84, timeTaken: "2h 02m" }
-  ];
+  // Fallback: No real leaderboard data is available yet, return empty list.
+  return [];
 }
 
 function formatDuration(totalSeconds: number): string {
