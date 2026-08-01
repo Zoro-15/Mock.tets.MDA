@@ -21,8 +21,8 @@ export default function OptionCard({
   disabled = false 
 }: OptionCardProps) {
   let baseClass = "w-full p-4 border rounded-xl flex items-center gap-4 text-left transition-all duration-200 outline-none text-base cursor-pointer";
-  let borderClass = "border-[#334155]/60 bg-[#1E293B]/40 hover:bg-[#1E293B]/70 hover:border-[#3B82F6]/30 text-[#CBD5E1]";
-  let labelBgClass = "bg-[#0F172A] text-[#CBD5E1] border border-[#334155]/60";
+  let borderClass = "border-[#334155]/60 bg-surface-custom/40 hover:bg-surface-custom/70 hover:border-primary-custom/30 text-text-secondary-custom";
+  let labelBgClass = "bg-background-custom text-text-secondary-custom border border-[#334155]/60";
 
   if (disabled) {
     baseClass += " cursor-default pointer-events-none";
@@ -31,16 +31,16 @@ export default function OptionCard({
   // Visual states logic
   if (isCorrect) {
     // Correct option (should be highlighted green in solution review)
-    borderClass = "border-[#22C55E] bg-[#22C55E]/10 text-[#F8FAFC]";
-    labelBgClass = "bg-[#22C55E] text-[#0F172A] border border-[#22C55E]";
+    borderClass = "border-success-custom bg-success-custom/10 text-text-primary-custom";
+    labelBgClass = "bg-success-custom text-background-custom border border-success-custom";
   } else if (isWrong) {
     // Wrong option selected by user
-    borderClass = "border-[#EF4444] bg-[#EF4444]/10 text-[#F8FAFC]";
-    labelBgClass = "bg-[#EF4444] text-white border border-[#EF4444]";
+    borderClass = "border-danger-custom bg-danger-custom/10 text-text-primary-custom";
+    labelBgClass = "bg-danger-custom text-white border border-danger-custom";
   } else if (isSelected) {
     // Active selection state in active test mode
-    borderClass = "border-[#3B82F6] bg-[#3B82F6]/10 text-[#F8FAFC]";
-    labelBgClass = "bg-[#3B82F6] text-[#0F172A] border border-[#3B82F6]";
+    borderClass = "border-primary-custom bg-primary-custom/10 text-text-primary-custom";
+    labelBgClass = "bg-primary-custom text-background-custom border border-primary-custom";
   }
 
   return (

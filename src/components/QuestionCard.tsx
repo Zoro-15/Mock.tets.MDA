@@ -25,14 +25,14 @@ export default function QuestionCard({
   };
 
   return (
-    <div className="w-full bg-[#1E293B]/70 border border-[#334155]/60 rounded-2xl p-6 space-y-5">
+    <div className="w-full bg-surface-custom/70 border border-[#334155]/60 rounded-2xl p-6 space-y-5">
       {/* Question Header */}
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#334155]/60 pb-4">
         <div className="flex items-center gap-3">
-          <span className="px-3 py-1 bg-[#3B82F6]/10 text-[#3B82F6] border border-[#3B82F6]/20 rounded-lg text-sm font-bold font-mono">
+          <span className="px-3 py-1 bg-primary-custom/10 text-primary-custom border border-primary-custom/20 rounded-lg text-sm font-bold font-mono">
             Q. {question.questionNumber || questionNumber}
           </span>
-          <div className="flex items-center gap-1.5 text-xs text-[#CBD5E1] bg-[#0F172A] px-2.5 py-1 rounded-md font-mono">
+          <div className="flex items-center gap-1.5 text-xs text-text-secondary-custom bg-background-custom px-2.5 py-1 rounded-md font-mono">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
             </svg>
@@ -41,19 +41,19 @@ export default function QuestionCard({
         </div>
 
         <div className="flex items-center gap-3 font-mono text-xs">
-          <div className="px-2 py-1 rounded bg-[#22C55E]/10 border border-[#22C55E]/20 text-[#22C55E]">
+          <div className="px-2 py-1 rounded bg-success-custom/10 border border-success-custom/20 text-success-custom">
             +{positiveMarks.toFixed(1)}
           </div>
-          <div className="px-2 py-1 rounded bg-[#EF4444]/10 border border-[#EF4444]/20 text-[#EF4444]">
+          <div className="px-2 py-1 rounded bg-danger-custom/10 border border-danger-custom/20 text-danger-custom">
             -{negativeMarks.toFixed(2)}
           </div>
         </div>
       </div>
 
       {/* Question Text Area */}
-      <div className="space-y-4 text-[#F8FAFC] text-base leading-relaxed">
+      <div className="space-y-4 text-text-primary-custom text-base leading-relaxed">
         {question.comprehension && (
-          <div className="bg-[#F59E0B]/10 border-l-4 border-[#F59E0B] rounded-r-xl p-4 text-[#CBD5E1] text-sm leading-relaxed mb-4">
+          <div className="bg-warning-custom/10 border-l-4 border-warning-custom rounded-r-xl p-4 text-text-secondary-custom text-sm leading-relaxed mb-4">
             <LatexRenderer text={question.comprehension} />
           </div>
         )}
@@ -63,13 +63,13 @@ export default function QuestionCard({
 
         {/* Render Assertion-Reason details */}
         {question.type === 'assertion-reason' && question.assertionText && question.reasonText && (
-          <div className="pl-4 border-l-2 border-[#3B82F6] py-1 bg-[#1E293B]/40 rounded-r-lg space-y-2 mt-3 p-3">
+          <div className="pl-4 border-l-2 border-primary-custom py-1 bg-surface-custom/40 rounded-r-lg space-y-2 mt-3 p-3">
             <div className="text-sm">
-              <strong className="text-[#3B82F6] font-bold">Assertion (A):</strong>{' '}
+              <strong className="text-primary-custom font-bold">Assertion (A):</strong>{' '}
               <LatexRenderer text={question.assertionText} />
             </div>
             <div className="text-sm">
-              <strong className="text-[#3B82F6] font-bold">Reason (R):</strong>{' '}
+              <strong className="text-primary-custom font-bold">Reason (R):</strong>{' '}
               <LatexRenderer text={question.reasonText} />
             </div>
           </div>
@@ -80,9 +80,9 @@ export default function QuestionCard({
           <div className="my-4 overflow-x-auto border border-[#334155]/60 rounded-xl">
             <table className="w-full text-left text-sm border-collapse">
               <thead>
-                <tr className="bg-[#0F172A] border-b border-[#334155]/60">
+                <tr className="bg-background-custom border-b border-[#334155]/60">
                   {question.tableData[0].map((header, idx) => (
-                    <th key={idx} className="p-3 font-semibold text-[#F8FAFC]">
+                    <th key={idx} className="p-3 font-semibold text-text-primary-custom">
                       {header}
                     </th>
                   ))}
@@ -92,10 +92,10 @@ export default function QuestionCard({
                 {question.tableData.slice(1).map((row, rowIdx) => (
                   <tr 
                     key={rowIdx} 
-                    className="border-b border-[#334155]/40 hover:bg-[#1E293B]/50 transition-colors"
+                    className="border-b border-[#334155]/40 hover:bg-surface-custom/50 transition-colors"
                   >
                     {row.map((cell, cellIdx) => (
-                      <td key={cellIdx} className="p-3 text-[#CBD5E1]">
+                      <td key={cellIdx} className="p-3 text-text-secondary-custom">
                         <LatexRenderer text={cell} />
                       </td>
                     ))}

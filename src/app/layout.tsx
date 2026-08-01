@@ -20,7 +20,7 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/icon.svg" type="image/svg+xml" />
       </head>
-      <body className="antialiased min-h-screen bg-[#0F172A] text-[#F8FAFC] selection:bg-[#3B82F6]/30 selection:text-white">
+      <body className="antialiased min-h-screen bg-background-custom text-text-primary-custom selection:bg-primary-custom/30 selection:text-white">
         {children}
       </body>
     </html>
