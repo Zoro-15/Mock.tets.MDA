@@ -75,9 +75,6 @@ export default function ContinueLearningCard({ unfinishedAttempt, test }: Contin
               </svg>
             </div>
             <h4 className="text-sm font-semibold text-text-primary-custom">No Unfinished Tests</h4>
-            <p className="text-xs text-text-secondary-custom max-w-[240px]">
-              Select a category below to start your NDA preparation.
-            </p>
           </div>
         )}
 

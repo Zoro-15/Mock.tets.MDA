@@ -61,7 +61,7 @@ export default function HomePage() {
   };
 
   return (
-    <div className="min-h-screen bg-background-custom text-text-primary-custom">
+    <div className="min-h-screen bg-background-custom text-text-primary-custom flex flex-col justify-between">
       {/* Registration / Login Modal Overlay */}
       {!currentUser && <RegistrationModal onSuccess={handleAuthSuccess} />}
 
@@ -70,12 +70,32 @@ export default function HomePage() {
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             {/* Logo */}
-            <div className="w-10 h-10 rounded-xl bg-primary-custom flex items-center justify-center font-black text-xl text-white tracking-wider shadow-md shadow-primary-custom/20">
-              N
+            <div className="w-9 h-9 select-none pointer-events-none flex items-center justify-center shrink-0">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" className="w-full h-full text-text-primary-custom">
+                <defs>
+                  <clipPath id="logoCircleClip">
+                    <circle cx="50" cy="50" r="40" />
+                  </clipPath>
+                </defs>
+                {/* Circle outline */}
+                <circle cx="50" cy="50" r="40" fill="none" stroke="currentColor" strokeWidth="6" />
+                
+                {/* Inner parts clipped */}
+                <g clipPath="url(#logoCircleClip)">
+                  {/* Left boundary line */}
+                  <line x1="38" y1="0" x2="38" y2="100" stroke="currentColor" strokeWidth="6" />
+                  {/* Right boundary line */}
+                  <line x1="62" y1="0" x2="62" y2="100" stroke="currentColor" strokeWidth="6" />
+                  
+                  {/* Center lines */}
+                  <line x1="45" y1="0" x2="45" y2="100" stroke="currentColor" strokeWidth="3.2" />
+                  <line x1="50" y1="0" x2="50" y2="100" stroke="currentColor" strokeWidth="3.2" />
+                  <line x1="55" y1="0" x2="55" y2="100" stroke="currentColor" strokeWidth="3.2" />
+                </g>
+              </svg>
             </div>
             <div>
               <span className="font-extrabold text-lg text-text-primary-custom tracking-tight block leading-tight">NDA Mock</span>
-              <span className="text-[10px] text-text-secondary-custom/60 font-bold uppercase tracking-wider block">Test Platform</span>
             </div>
           </div>
 
@@ -113,16 +133,13 @@ export default function HomePage() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-6xl mx-auto px-4 py-8 space-y-10">
+      <main className="max-w-6xl w-full mx-auto px-4 pt-8 pb-4 space-y-10 flex-grow flex-1">
         
         {/* Welcome Section */}
         <section className="space-y-1">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-text-primary-custom tracking-tight">
             Welcome back, {currentUser ? currentUser.name : 'Aspirant'}!
           </h1>
-          <p className="text-sm sm:text-base text-text-secondary-custom max-w-xl leading-relaxed">
-            Gear up for the National Defence Academy. Consistency is key to clearing the cutoff.
-          </p>
         </section>
 
         {/* Continue Learning card */}
@@ -155,8 +172,8 @@ export default function HomePage() {
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-base font-bold text-text-primary-custom">Previous Year Papers</h3>
-                  <p className="text-xs text-text-secondary-custom leading-relaxed">
-                    Practice actual questions from the official NDA exams (2015-2025).
+                  <p className="text-xs text-text-secondary-custom">
+                    PYQ From 2015-2025 [ 21+21 ]
                   </p>
                 </div>
               </div>
@@ -179,8 +196,8 @@ export default function HomePage() {
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-base font-bold text-text-primary-custom">Mathematics Super Pack</h3>
-                  <p className="text-xs text-text-secondary-custom leading-relaxed">
-                    Sharpen mathematical formulas, matrices, derivatives, and vectors.
+                  <p className="text-xs text-text-secondary-custom">
+                    31 Chapter Wise + 5 Subject Test
                   </p>
                 </div>
               </div>
@@ -203,8 +220,8 @@ export default function HomePage() {
                 </div>
                 <div className="space-y-1">
                   <h3 className="text-base font-bold text-text-primary-custom">Full Mock Tests</h3>
-                  <p className="text-xs text-text-secondary-custom leading-relaxed">
-                    Simulate the actual 2.5-hour NDA paper under realistic exam pressure.
+                  <p className="text-xs text-text-secondary-custom">
+                    Simulation Of a Real Mock Test [ 8+8 ]
                   </p>
                 </div>
               </div>
@@ -220,7 +237,7 @@ export default function HomePage() {
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-[#334155]/40 bg-surface-custom/35 mt-16">
+      <footer className="border-t border-[#334155]/40 bg-surface-custom/35 mt-6">
         <div className="max-w-6xl mx-auto px-4 py-6 text-center text-xs text-text-secondary-custom/60">
           &copy; {new Date().getFullYear()} NDA Mock Test Platform. All rights reserved. Designed for NDA aspirants.
         </div>
