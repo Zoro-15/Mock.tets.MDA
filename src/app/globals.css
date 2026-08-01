@@ -2,7 +2,7 @@
 @import "tailwindcss";
 
 :root {
-  --background-custom: #0c0b0bd3;
+  --background-custom: #0c0b0b;
   --surface-custom: #51566628;
   --primary-custom: #2865c9;
   --success-custom: #22C55E;
@@ -50,13 +50,13 @@ body {
 
 /* Light mode overrides for Musaeum-inspired theme */
 html[data-theme="light"] {
-  --background-custom: #7e7d79de;
-  --surface-custom: #b4b3ada9;
-  --primary-custom: #1d4ed8;
+  --background-custom: #8d8d86;
+  --surface-custom: #a7a799b9;
+  --primary-custom: #1c385e;
   --success-custom: #15803d;
-  --warning-custom: #b45309;
-  --danger-custom: #b91c1c;
-  --text-primary-custom: #111827;
+  --warning-custom: #794a26;
+  --danger-custom: #8f2323;
+  --text-primary-custom: #000000;
   --text-secondary-custom: #0c0d0e;
 }
 
