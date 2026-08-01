@@ -24,11 +24,17 @@ function InstructionsContent() {
     setLoading(false);
   }, [testId]);
 
-  const handleStartTest = () => {
+  const handleStartTest = async () => {
     if (!testId) return;
-    const attempt = createAttempt(testId);
-    if (attempt) {
-      router.push(`/test?attemptId=${attempt.id}`);
+    setLoading(true);
+    try {
+      const attempt = await createAttempt(testId);
+      if (attempt) {
+        router.push(`/test?attemptId=${attempt.id}`);
+      }
+    } catch (e) {
+      console.error('Failed to create test attempt:', e);
+      setLoading(false);
     }
   };
 

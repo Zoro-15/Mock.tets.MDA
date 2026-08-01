@@ -107,7 +107,7 @@ export default function SolutionCard({ question, response, questionNumber }: Sol
       </div>
 
       {/* Answer Options Checklist Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4">
+      <div className="grid grid-cols-1 gap-3 mt-4">
         {question.options.map((opt, idx) => {
           const isSelected = selectedIdx === idx;
           const isOptCorrect = idx === correctIdx;

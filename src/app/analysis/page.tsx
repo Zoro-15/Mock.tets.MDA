@@ -25,7 +25,7 @@ function AnalysisContent() {
   useEffect(() => {
     async function init() {
       if (attemptId) {
-        const att = getAttempt(attemptId);
+        const att = await getAttempt(attemptId);
         if (att) {
           setAttempt(att);
           const t = getTestById(att.testId);

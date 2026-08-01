@@ -35,7 +35,7 @@ function ActiveTestContent() {
   useEffect(() => {
     async function init() {
       if (attemptId) {
-        const att = getAttempt(attemptId);
+        const att = await getAttempt(attemptId);
         if (att) {
           setAttempt(att);
           const t = getTestById(att.testId);
@@ -402,7 +402,7 @@ function ActiveTestContent() {
               />
 
               {/* Answer options */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 gap-4">
                 {activeQuestion.options.map((opt, i) => (
                   <OptionCard
                     key={i}

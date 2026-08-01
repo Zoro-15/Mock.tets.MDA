@@ -244,6 +244,7 @@ export async function getQuestionsForTest(testId: string): Promise<Question[]> {
       if (error) throw error;
 
       if (data && data.length > 0) {
+        console.log(`[Supabase] Loaded ${data.length} questions for test: ${testId}`);
         // Map database columns to Question interface
         return data.map((row: any) => ({
           id: row.id.toString(),
@@ -256,10 +257,11 @@ export async function getQuestionsForTest(testId: string): Promise<Question[]> {
         }));
       }
     } catch (err) {
-      console.warn(`Supabase question fetch failed for ${testId}, using local fallback:`, err);
+      console.warn(`[Supabase] Question fetch failed for ${testId}, using local fallback:`, err);
     }
   }
 
+  console.log(`[Local Fallback] Using mock fallback questions for test: ${testId}`);
   // Fallback to local generated data
   return generateQuestionsForTest(testId);
 }

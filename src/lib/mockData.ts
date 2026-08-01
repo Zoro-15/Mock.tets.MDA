@@ -201,8 +201,7 @@ const mathQuestionPool: Omit<Question, 'id'>[] = [
   },
   {
     type: 'latex',
-    questionText: 'If the matrix $A$ is defined as:',
-    assertionText: '$$A = \\begin{pmatrix} 2 & 3 \\\\ 1 & 4 \\end{pmatrix}$$ Find the determinant of the matrix $A^2$.',
+    questionText: 'If the matrix $A$ is defined as:\n\n$$A = \\begin{pmatrix} 2 & 3 \\\\ 1 & 4 \\end{pmatrix}$$\n\nFind the determinant of the matrix $A^2$.',
     options: [
       '5',
       '25',
@@ -214,8 +213,7 @@ const mathQuestionPool: Omit<Question, 'id'>[] = [
   },
   {
     type: 'latex',
-    questionText: 'Evaluate the integral:',
-    assertionText: '$$\\int_{0}^{\\pi/2} \\sin^2(x) \\, dx$$',
+    questionText: 'Evaluate the integral:\n\n$$\\int_{0}^{\\pi/2} \\sin^2(x) \\, dx$$',
     options: [
       '\\pi',
       '\\frac{\\pi}{2}',
@@ -227,8 +225,7 @@ const mathQuestionPool: Omit<Question, 'id'>[] = [
   },
   {
     type: 'latex',
-    questionText: 'What is the sum of the infinite series:',
-    assertionText: '$$S = 1 + \\frac{1}{2} + \\frac{1}{4} + \\frac{1}{8} + \\dots$$',
+    questionText: 'What is the sum of the infinite series:\n\n$$S = 1 + \\frac{1}{2} + \\frac{1}{4} + \\frac{1}{8} + \\dots$$',
     options: [
       '1',
       '2',
@@ -240,8 +237,7 @@ const mathQuestionPool: Omit<Question, 'id'>[] = [
   },
   {
     type: 'latex',
-    questionText: 'Find the general solution of the differential equation:',
-    assertionText: '$$\\frac{dy}{dx} + y = e^{-x}$$',
+    questionText: 'Find the general solution of the differential equation:\n\n$$\\frac{dy}{dx} + y = e^{-x}$$',
     options: [
       'y = (x + C)e^{-x}',
       'y = xe^{-x} + C',
