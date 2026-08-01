@@ -1,0 +1,140 @@
+import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { Attempt, Test } from '../lib/types';
+import { getMotivationalQuote } from '../lib/db';
+
+interface ContinueLearningCardProps {
+  unfinishedAttempt: Attempt | null;
+  test: Test | null;
+}
+
+export default function ContinueLearningCard({ unfinishedAttempt, test }: ContinueLearningCardProps) {
+  const [showQuote, setShowQuote] = useState(true);
+  const [quote, setQuote] = useState('');
+
+  useEffect(() => {
+    setQuote(getMotivationalQuote());
+  }, [unfinishedAttempt]);
+
+  const refreshQuote = () => {
+    setQuote(getMotivationalQuote());
+  };
+
+  // Calculate progress stats
+  let answeredCount = 0;
+  let progressPct = 0;
+  if (unfinishedAttempt && test) {
+    const responsesList = Object.values(unfinishedAttempt.responses);
+    answeredCount = responsesList.filter(r => r.selectedOptionIndex !== null).length;
+    progressPct = test.questionsCount > 0 ? Math.round((answeredCount / test.questionsCount) * 100) : 0;
+  }
+
+  return (
+    <div className="w-full space-y-4">
+      {/* Motivation Toggle Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-lg font-semibold text-[#F8FAFC]">Your Progress</h2>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-[#CBD5E1]">Daily Motivation</span>
+          <button 
+            onClick={() => setShowQuote(!showQuote)}
+            className={`w-9 h-5 rounded-full p-0.5 transition-colors cursor-pointer duration-200 outline-none ${
+              showQuote ? 'bg-[#3B82F6]' : 'bg-[#334155]'
+            }`}
+          >
+            <div className={`w-4 h-4 rounded-full bg-white transition-transform duration-200 ${
+              showQuote ? 'translate-x-4' : 'translate-x-0'
+            }`} />
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {/* Continue Learning card */}
+        {unfinishedAttempt && test ? (
+          <div className="p-6 bg-gradient-to-br from-[#1E293B] to-[#1E293B]/80 border border-[#334155]/60 rounded-2xl flex flex-col justify-between space-y-4">
+            <div>
+              <span className="text-xs font-semibold px-2.5 py-1 bg-[#F59E0B]/10 text-[#F59E0B] rounded-full uppercase tracking-wider">
+                In Progress
+              </span>
+              <h3 className="text-lg font-bold text-[#F8FAFC] mt-3 leading-snug">
+                {test.title}
+              </h3>
+              <p className="text-sm text-[#CBD5E1] mt-1">
+                {answeredCount} of {test.questionsCount} questions answered ({progressPct}%)
+              </p>
+              
+              {/* Progress bar */}
+              <div className="w-full bg-[#0F172A] rounded-full h-1.5 mt-3 overflow-hidden">
+                <div 
+                  className="bg-[#F59E0B] h-1.5 rounded-full transition-all duration-300"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+            </div>
+
+            <Link 
+              href={`/test?attemptId=${unfinishedAttempt.id}`}
+              className="w-full text-center bg-[#F59E0B] hover:bg-[#F59E0B]/90 text-[#0F172A] py-2.5 rounded-xl font-semibold text-sm transition-all shadow-sm cursor-pointer block"
+            >
+              Resume Test
+            </Link>
+          </div>
+        ) : (
+          <div className="p-6 bg-[#1E293B] border border-[#334155]/30 rounded-2xl flex flex-col items-center justify-center text-center space-y-3">
+            <div className="w-10 h-10 bg-[#3B82F6]/10 rounded-full flex items-center justify-center text-[#3B82F6]">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25" />
+              </svg>
+            </div>
+            <h4 className="text-sm font-semibold text-[#F8FAFC]">No Unfinished Tests</h4>
+            <p className="text-xs text-[#CBD5E1] max-w-[240px]">
+              Select a category below to start your NDA preparation.
+            </p>
+          </div>
+        )}
+
+        {/* Motivation Card */}
+        <div className={`p-6 bg-gradient-to-br from-[#1E293B] to-[#0F172A] border border-[#334155]/60 rounded-2xl flex flex-col justify-between transition-all duration-300 ${
+          showQuote ? 'opacity-100 scale-100' : 'opacity-40 pointer-events-none'
+        }`}>
+          <div>
+            <div className="flex items-center justify-between">
+              <span className="text-xs font-semibold text-[#3B82F6] tracking-wider uppercase">
+                Officer's Mindset
+              </span>
+              {showQuote && (
+                <button 
+                  onClick={refreshQuote}
+                  className="text-xs text-[#CBD5E1] hover:text-[#3B82F6] cursor-pointer flex items-center gap-1 transition-colors outline-none"
+                  title="Next Quote"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+                  </svg>
+                  <span>Shuffle</span>
+                </button>
+              )}
+            </div>
+            
+            <div className="mt-4 min-h-[72px]">
+              {showQuote ? (
+                <blockquote className="text-[#F8FAFC] italic font-medium border-l-2 border-[#3B82F6] pl-4 py-1 leading-relaxed text-sm">
+                  "{quote}"
+                </blockquote>
+              ) : (
+                <p className="text-xs text-[#CBD5E1]/60 italic pl-4 py-1">
+                  Motivation toggle is off. Focus on your discipline.
+                </p>
+              )}
+            </div>
+          </div>
+
+          <div className="text-right text-[10px] text-[#CBD5E1]/50 mt-4">
+            NDA Mock Test Platform
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

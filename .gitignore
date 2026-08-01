@@ -1,0 +1,43 @@
+# Dependency directories
+node_modules/
+
+# Next.js & Build outputs
+.next/
+out/
+dist/
+
+# Environment files and secrets
+.env
+.env.local
+.env.development
+.env.production
+.env.*.local
+*.env
+
+# Unnecessary source text files and previous test projects
+Alpha CDS.txt
+english-test/
+solo-leveling/
+musaeum-portal/
+
+# IDE and editor settings
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# System files
+.DS_Store
+Thumbs.db
+
+# AI Agent / IDE tools, lockfiles, and logs
+.agents/
+.claude/
+.kilocode/
+scratch/
+skills-lock.json
+AGENTS.md
+GEMINI.md
