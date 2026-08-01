@@ -3,6 +3,58 @@ import { Test, Question } from './types';
 // Let's generate the 42 PYP papers
 export const previousYearPapers: Test[] = [];
 
+// Helper to find exact database source file names for PYPs
+function getPypSourceFileName(year: number, half: string, subCategory: 'math' | 'gat'): string | undefined {
+  if (subCategory === 'math') {
+    if (year === 2025 && half === 'II') {
+      return "NDA_II_2025_Mathematics_Official_Paper_Held_On_14_Sept_2025_.html";
+    } else if (year === 2024 && half === 'II') {
+      return "NDA-II 2024 _Maths_ Official Paper _Held On_ 01 Sept_ 2024_.html";
+    } else if (year === 2017 && half === 'II') {
+      return "NDA Mathematics 10 Sept 2017 Official Paper.html";
+    } else if (year === 2016 && half === 'I') {
+      return "NDA Mathematics 17 April 2016 Official Paper.html";
+    } else if (year === 2021 && half === 'I') {
+      return "NDA Mathematics 18 Apr 2021 Official Paper.html";
+    } else if (year === 2020 && half === 'II') {
+      return "NDA Mathematics 6 Sep 2020 Official Paper.html";
+    } else if (year === 2018 && half === 'II') {
+      return "NDA Mathematics 9 Sept 2018 Official Paper.html";
+    }
+  } else {
+    if (year === 2022 && half === 'I') {
+      return "NDA General Ability Test 10 April 2022 Official Paper.html";
+    } else if (year === 2017 && half === 'II') {
+      return "NDA General Ability Test 10 Sept 2017 Official Paper.html";
+    } else if (year === 2021 && half === 'II') {
+      return "NDA General Ability Test 14 Nov 2021 Official Paper.html";
+    } else if (year === 2023 && half === 'I') {
+      return "NDA General Ability Test 16 April 2023 Official Paper.html";
+    } else if (year === 2015 && half === 'II') {
+      return "NDA General Ability Test 16 Dec 2015 Official Paper.html";
+    } else if (year === 2016 && half === 'I') {
+      return "NDA General Ability Test 17 April 2016 Official Paper.html";
+    } else if (year === 2019 && half === 'II') {
+      return "NDA General Ability Test 17 Nov 2019 Official Paper.html";
+    } else if (year === 2021 && half === 'I') {
+      return "NDA General Ability Test 18 Apr 2021 Official Paper.html";
+    } else if (year === 2016 && half === 'II') {
+      return "NDA General Ability Test 18 Sept 2016 Official Paper.html";
+    } else if (year === 2019 && half === 'I') {
+      return "NDA General Ability Test 21 April 2019 Official Paper.html";
+    } else if (year === 2018 && half === 'I') {
+      return "NDA General Ability Test 22 April 2018 Official Paper.html";
+    } else if (year === 2023 && half === 'II') {
+      return "NDA General Ability Test 3 Sep 2023 Official Paper.html";
+    } else if (year === 2020 && half === 'II') {
+      return "NDA General Ability Test 6 Sep 2020 Official Paper.html";
+    } else if (year === 2018 && half === 'II') {
+      return "NDA General Ability Test 9 Sept 2018 Official Paper.html";
+    }
+  }
+  return undefined;
+}
+
 // 21 Math papers and 21 GAT papers
 for (let year = 2025; year >= 2015; year--) {
   for (const half of ['II', 'I']) {
@@ -18,7 +70,8 @@ for (let year = 2025; year >= 2015; year--) {
       duration: 150,
       marks: 300,
       negativeMarking: 0.83,
-      syllabus: ['Algebra', 'Matrices & Determinants', 'Trigonometry', 'Analytical Geometry', 'Differential Calculus', 'Integral Calculus', 'Vector Algebra', 'Probability & Statistics']
+      syllabus: ['Algebra', 'Matrices & Determinants', 'Trigonometry', 'Analytical Geometry', 'Differential Calculus', 'Integral Calculus', 'Vector Algebra', 'Probability & Statistics'],
+      sourceFileName: getPypSourceFileName(year, half, 'math')
     });
 
     // GAT paper
@@ -32,7 +85,8 @@ for (let year = 2025; year >= 2015; year--) {
         duration: 150,
         marks: 600,
         negativeMarking: 1.33,
-        syllabus: ['English (Vocabulary, Grammar, Comprehension)', 'General Knowledge (Physics, Chemistry, General Science, History, Geography, Civics)']
+        syllabus: ['English (Vocabulary, Grammar, Comprehension)', 'General Knowledge (Physics, Chemistry, General Science, History, Geography, Civics)'],
+        sourceFileName: getPypSourceFileName(year, half, 'gat')
       });
     }
   }
@@ -45,51 +99,52 @@ const gatPyps = previousYearPapers.filter(p => p.subCategory === 'gat');
 // Mathematics Super Pack: 36 Tests (31 Chapter Tests, 5 Subject Tests)
 export const mathsSuperPack: Test[] = [];
 
-const chapters = [
-  "Set Theory & Types of Sets",
-  "Relations & Functions",
-  "Complex Numbers",
-  "Quadratic Equations",
-  "Arithmetic Progression (AP)",
-  "Geometric Progression (GP)",
-  "Harmonic Progression & Miscellaneous Series",
-  "Permutations & Combinations",
-  "Binomial Theorem",
-  "Logarithms & Exponential Series",
-  "Matrices & Types of Matrices",
-  "Determinants & Properties",
-  "Trigonometric Ratios & Identities",
-  "Inverse Trigonometric Functions",
-  "Heights & Distances",
-  "Properties of Triangles",
-  "Rectangular Cartesian Coordinates",
-  "Straight Lines",
-  "Circles & System of Circles",
-  "Parabola",
-  "Ellipse",
-  "Hyperbola",
-  "Limits of a Function",
-  "Continuity & Differentiability",
-  "Methods of Differentiation",
-  "Tangents & Normals",
-  "Maxima & Minima",
-  "Indefinite Integration",
-  "Definite Integration & Area Under Curves",
-  "Differential Equations",
-  "Vector Algebra & 3D Geometry"
+const databaseChapters = [
+  { index: 1, title: "Set Theory & Types of Sets", file: "NDA CT 1_ Set Theory _ Types of Sets.html" },
+  { index: 2, title: "Relations & Functions", file: "CT 2_ Relations _ Functions.html" },
+  { index: 3, title: "Complex Numbers", file: "CT 3_ Complex Numbers.html" },
+  { index: 4, title: "Binary System", file: "CT 4_ Binary System.html" },
+  { index: 5, title: "Arithmetic Progression", file: "CT 5_ Arithmetic Progression.html" },
+  { index: 6, title: "Geometric & Harmonic Progression", file: "CT 6_ Geometric _ Harmonic Progression.html" },
+  { index: 7, title: "Quadratic Equations", file: "CT 7_ Quadratic Equations.html" },
+  { index: 8, title: "Linear Inequalities", file: "CT 8_ Linear Inequalities.html" },
+  { index: 9, title: "Permutation & Combination", file: "CT 9_ Permutation _ Combination.html" },
+  { index: 10, title: "Binomial Theorem", file: "CT 10_ Binomial Theorem.html" },
+  { index: 11, title: "Logarithms", file: "CT 11_ Logarithms.html" },
+  { index: 12, title: "Matrices - I", file: "CT 12_ Matrices - I.html" },
+  { index: 13, title: "Matrices - II", file: "CT 13_ Matrices - II.html" },
+  { index: 14, title: "Determinants - I", file: "CT 14_ Determinants - I.html" },
+  { index: 15, title: "Determinants - II", file: "CT 15_ Determinants - II.html" },
+  { index: 16, title: "Trigonometry Fundamentals", file: "CT 16_ Trigonometry Fundamentals.html" },
+  { index: 17, title: "Trigonometric Ratios", file: "CT 17_ Trigonometric Ratios.html" },
+  { index: 18, title: "Trigonometric Identities", file: "CT 18_ Trigonometric Identities.html" },
+  { index: 19, title: "Inverse Trigonometric Functions", file: "CT 19_ Inverse Trigonometric Functions.html" },
+  { index: 20, title: "Heights & Distance", file: "CT 20_ Heights _ Distance.html" },
+  { index: 21, title: "Lines", file: "CT 21_ Lines.html" },
+  { index: 22, title: "Circles", file: "CT 22_ Circles.html" },
+  { index: 23, title: "Parabola", file: "CT 23_ Parabola.html" },
+  { index: 24, title: "Ellipse", file: "CT 24_ Ellipse.html" },
+  { index: 25, title: "Hyperbola", file: "CT 25_ Hyperbola.html" },
+  { index: 26, title: "Three Dimensional Geometry - I", file: "CT 26_ Three Dimensional Geometry - I.html" },
+  { index: 27, title: "Three Dimensional Geometry - II", file: "CT 27_ Three Dimensional Geometry - II.html" },
+  { index: 28, title: "Functions", file: "CT 28_ Functions.html" },
+  { index: 29, title: "Limits & Continuity", file: "CT 29_ Limits _ Continuity.html" },
+  { index: 30, title: "Continuity & Differentiability", file: "CT 30_ Continuity _ Differentiability.html" },
+  { index: 31, title: "Derivatives", file: "CT 31_ Derivatives.html" }
 ];
 
-chapters.forEach((chapter, index) => {
+databaseChapters.forEach((ch) => {
   mathsSuperPack.push({
-    id: `maths-pack-chapter-${index + 1}`,
-    title: `NDA CT ${index + 1}: ${chapter}`,
+    id: `maths-pack-chapter-${ch.index}`,
+    title: `NDA CT ${ch.index}: ${ch.title}`,
     category: 'maths_pack',
     subCategory: 'chapter',
     questionsCount: 10,
     duration: 13,
     marks: 25,
     negativeMarking: 0.83,
-    syllabus: [chapter]
+    syllabus: [ch.title],
+    sourceFileName: ch.file
   });
 });
 

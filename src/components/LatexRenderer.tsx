@@ -27,10 +27,18 @@ export default function LatexRenderer({ text }: LatexRendererProps) {
         const katex = await import('katex');
         if (!active) return;
 
-        // 1. Decode HTML entities (like &amp; -> &, &alpha; -> α) while keeping HTML tags
-        const decodedText = decodeHtmlEntities(text);
+        // 1. Clean up unreadable dark color styles and normalize double backslashes in math markers
+        const cleanedText = text
+          .replace(/color:\s*rgb\([^)]*\);?/gi, '')
+          .replace(/color:\s*#[a-f0-9]{3,8};?/gi, '')
+          .replace(/color:\s*\w+;?/gi, '')
+          .replace(/style="\s*"/gi, '')
+          .replace(/\\\\([()\[\]])/g, '\\$1');
 
-        // 2. Split text by block math ($$, \[) and inline math ($, \()
+        // 2. Decode HTML entities (like &amp; -> &, &alpha; -> α) while keeping HTML tags
+        const decodedText = decodeHtmlEntities(cleanedText);
+
+        // 3. Split text by block math ($$, \[) and inline math ($, \()
         const parts = decodedText.split(/(\$\$[\s\S]+?\$\$|\$[\s\S]+?\$|\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\))/g);
         
         const renderMath = (math: string, displayMode: boolean) => {

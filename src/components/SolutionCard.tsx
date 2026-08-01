@@ -61,6 +61,11 @@ export default function SolutionCard({ question, response, questionNumber }: Sol
 
       {/* Question Body */}
       <div className="space-y-4 text-base leading-relaxed text-[#F8FAFC]">
+        {question.comprehension && (
+          <div className="bg-[#F59E0B]/10 border-l-4 border-[#F59E0B] rounded-r-xl p-4 text-[#CBD5E1] text-sm leading-relaxed mb-4">
+            <LatexRenderer text={question.comprehension} />
+          </div>
+        )}
         <LatexRenderer text={question.questionText} />
 
         {/* Assertion-Reason */}

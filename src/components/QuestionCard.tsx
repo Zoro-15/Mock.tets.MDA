@@ -52,6 +52,11 @@ export default function QuestionCard({
 
       {/* Question Text Area */}
       <div className="space-y-4 text-[#F8FAFC] text-base leading-relaxed">
+        {question.comprehension && (
+          <div className="bg-[#F59E0B]/10 border-l-4 border-[#F59E0B] rounded-r-xl p-4 text-[#CBD5E1] text-sm leading-relaxed mb-4">
+            <LatexRenderer text={question.comprehension} />
+          </div>
+        )}
         <div>
           <LatexRenderer text={question.questionText} />
         </div>

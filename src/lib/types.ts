@@ -2,6 +2,7 @@ export interface Question {
   id: string;
   type: 'text' | 'latex' | 'table' | 'assertion-reason';
   questionText: string;
+  comprehension?: string; // Used for passage/comprehension questions
   assertionText?: string; // Used for assertion-reason questions
   reasonText?: string;    // Used for assertion-reason questions
   tableData?: string[][]; // Header row + data rows for tables
@@ -23,6 +24,7 @@ export interface Test {
   marks: number;
   negativeMarking: number; // raw value to subtract (e.g. 0.83 for Math, 1.33 for GAT)
   syllabus?: string[];
+  sourceFileName?: string;
 }
 
 export interface QuestionResponse {

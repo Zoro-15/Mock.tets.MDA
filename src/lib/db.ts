@@ -206,38 +206,38 @@ export async function getQuestionsForTest(testId: string): Promise<Question[]> {
     try {
       let query = supabase.from('questions').select('*');
       
-      // Match by source_file name using fuzzy matching on the chapter
-      if (test.category === 'maths_pack') {
-        if (test.subCategory === 'chapter') {
-          const match = test.title.match(/CT \d+: (.+)/);
-          const chName = match ? match[1] : '';
-          const idxMatch = test.title.match(/CT (\d+)/);
-          const idx = idxMatch ? idxMatch[1] : '';
-          
-          if (idx) {
-            // Match 'CT 10_Binomial Theorem' or similar
-            query = query.or(`source_file.ilike.%CT ${idx}_%,source_file.ilike.%CT ${idx}.%,source_file.ilike.%CT_${idx}%`);
-          } else if (chName) {
-            query = query.ilike('source_file', `%${chName}%`);
+      // If we have an exact sourceFileName configured, match it directly!
+      if (test.sourceFileName) {
+        query = query.eq('source_file', test.sourceFileName);
+      } else {
+        // Fallback fuzzy search rules
+        if (test.category === 'maths_pack') {
+          if (test.subCategory === 'chapter') {
+            const idxMatch = test.title.match(/CT (\d+)/);
+            const idx = idxMatch ? idxMatch[1] : '';
+            if (idx) {
+              query = query.or(`source_file.ilike.%CT ${idx}_%,source_file.ilike.%CT ${idx}.%,source_file.ilike.%CT_${idx}%`);
+            } else {
+              query = query.ilike('source_file', `%${test.title.replace(/NDA\s+/gi, '')}%`);
+            }
+          } else if (test.subCategory === 'subject') {
+            const match = test.title.match(/ST \d+: (.+)/);
+            const subjName = match ? match[1] : '';
+            if (subjName) {
+              query = query.ilike('source_file', `%${subjName}%`);
+            }
           }
-        } else if (test.subCategory === 'subject') {
-          const match = test.title.match(/ST \d+: (.+)/);
-          const subjName = match ? match[1] : '';
-          if (subjName) {
-            query = query.ilike('source_file', `%${subjName}%`);
+        } else if (test.category === 'pyp') {
+          const match = test.title.match(/(20\d{2})/);
+          const year = match ? match[1] : '';
+          const isMath = test.subCategory === 'math';
+          if (year) {
+            query = query.ilike('source_file', `%${year}%`).ilike('source_file', isMath ? '%math%' : '%gat%');
           }
+        } else if (test.category === 'full_mock') {
+          const isMath = test.subCategory === 'math';
+          query = query.ilike('source_file', `%mock%`).ilike('source_file', isMath ? '%math%' : '%gat%');
         }
-      } else if (test.category === 'pyp') {
-        // e.g. NDA-II 2025 Mathematics -> match 2025 and Math/GAT
-        const match = test.title.match(/(20\d{2})/);
-        const year = match ? match[1] : '';
-        const isMath = test.subCategory === 'math';
-        if (year) {
-          query = query.ilike('source_file', `%${year}%`).ilike('source_file', isMath ? '%math%' : '%gat%');
-        }
-      } else if (test.category === 'full_mock') {
-        const isMath = test.subCategory === 'math';
-        query = query.ilike('source_file', `%mock%`).ilike('source_file', isMath ? '%math%' : '%gat%');
       }
 
       const { data, error } = await query.order('question_number', { ascending: true });
@@ -248,7 +248,7 @@ export async function getQuestionsForTest(testId: string): Promise<Question[]> {
         // Map database columns to Question interface
         return data.map((row: any) => ({
           id: row.id.toString(),
-          type: row.comprehension ? 'assertion-reason' : (row.question_text.includes('pmatrix') || row.question_text.includes('\\frac') ? 'latex' : 'text'),
+          type: row.question_text.includes('pmatrix') || row.question_text.includes('\\frac') ? 'latex' : 'text',
           questionText: row.question_text,
           comprehension: row.comprehension || undefined,
           options: [row.option_1, row.option_2, row.option_3, row.option_4],
