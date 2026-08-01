@@ -198,7 +198,12 @@ function getOrGenerateDeviceToken(): string {
 // 2. DYNAMIC QUESTION FETCHING
 // ========================================================
 
+const questionsCache: Record<string, Question[]> = {};
+
 export async function getQuestionsForTest(testId: string): Promise<Question[]> {
+  if (questionsCache[testId]) {
+    return questionsCache[testId];
+  }
   const test = getTestById(testId);
   if (!test) return [];
 
@@ -271,7 +276,7 @@ export async function getQuestionsForTest(testId: string): Promise<Question[]> {
         console.log(`[Supabase] Loaded ${isolatedData.length} questions for test: ${testId} from ${selectedSourceFile}`);
 
         // Map database columns to Question interface
-        return isolatedData.map((row: any) => ({
+        const mapped = isolatedData.map((row: any) => ({
           id: row.id.toString(),
           type: row.question_text.includes('pmatrix') || row.question_text.includes('\\frac') ? 'latex' : 'text',
           questionText: row.question_text,
@@ -281,6 +286,8 @@ export async function getQuestionsForTest(testId: string): Promise<Question[]> {
           explanation: row.solution,
           questionNumber: row.question_number
         }));
+        questionsCache[testId] = mapped;
+        return mapped;
       }
     } catch (err) {
       console.warn(`[Supabase] Question fetch failed for ${testId}, using local fallback:`, err);
@@ -289,7 +296,9 @@ export async function getQuestionsForTest(testId: string): Promise<Question[]> {
 
   console.log(`[Local Fallback] Using mock fallback questions for test: ${testId}`);
   // Fallback to local generated data
-  return generateQuestionsForTest(testId);
+  const fallback = generateQuestionsForTest(testId);
+  questionsCache[testId] = fallback;
+  return fallback;
 }
 
 // ========================================================

@@ -295,12 +295,16 @@ function AnalysisContent() {
             {filteredQuestions.length > 0 ? (
               <div className="space-y-6">
                 {filteredQuestions.map(({ q, idx }) => (
-                  <SolutionCard
-                    key={q.id}
-                    question={q}
-                    response={attempt.responses[q.id]}
-                    questionNumber={idx}
-                  />
+                  <div 
+                    key={q.id} 
+                    className="[content-visibility:auto] contain-intrinsic-size-[400px]"
+                  >
+                    <SolutionCard
+                      question={q}
+                      response={attempt.responses[q.id]}
+                      questionNumber={idx}
+                    />
+                  </div>
                 ))}
               </div>
             ) : (

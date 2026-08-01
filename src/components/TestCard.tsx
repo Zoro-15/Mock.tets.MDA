@@ -1,6 +1,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { Test } from '../lib/types';
+import { getQuestionsForTest } from '../lib/db';
 
 interface TestCardProps {
   test: Test;
@@ -23,8 +24,16 @@ export default function TestCard({ test, status, attemptId }: TestCardProps) {
     buttonClass = "border border-[#3B82F6] text-[#3B82F6] hover:bg-[#3B82F6]/10";
   }
 
+  const handlePrefetch = () => {
+    // Warm up cache / trigger background database query
+    getQuestionsForTest(test.id).catch(() => {});
+  };
+
   return (
-    <div className="p-6 bg-[#1E293B] border border-[#334155]/60 hover:border-[#3B82F6]/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] hover:scale-[1.01] transition-all duration-300 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 group">
+    <div 
+      onMouseEnter={handlePrefetch}
+      className="p-6 bg-[#1E293B] border border-[#334155]/60 hover:border-[#3B82F6]/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] hover:scale-[1.01] transition-all duration-300 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 group"
+    >
       <div className="space-y-2">
         <h3 className="font-semibold text-lg text-[#F8FAFC] tracking-tight">{test.title}</h3>
         
