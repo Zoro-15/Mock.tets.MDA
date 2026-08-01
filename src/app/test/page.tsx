@@ -130,6 +130,20 @@ function ActiveTestContent() {
     }
   }, [attemptId, responses, router, isSubmitting]);
 
+  // Pause helper
+  const handlePause = useCallback(() => {
+    if (!attemptId) return;
+    const currentResponses = { ...responses };
+    Object.keys(currentResponses).forEach(qId => {
+      currentResponses[qId] = {
+        ...currentResponses[qId],
+        timeSpent: timeSpentRef.current[qId] || 0
+      };
+    });
+    saveProgress(currentResponses, timeLeftRef.current, currentIndex);
+    router.push('/');
+  }, [attemptId, responses, currentIndex, saveProgress, router]);
+
   // Expiry auto-submit
   useEffect(() => {
     if (expired && !loading && attempt && !attempt.completed) {
@@ -371,12 +385,12 @@ function ActiveTestContent() {
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 max-w-[60%]">
             <button 
-              onClick={() => setSubmitDialogOpen(true)}
+              onClick={handlePause}
               className="text-[#CBD5E1] hover:text-[#F8FAFC] p-1.5 hover:bg-[#0F172A]/40 rounded-lg cursor-pointer transition-colors"
-              title="Exit test"
+              title="Pause test"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0 0 13.5 3h-6a2.25 2.25 0 0 0-2.25 2.25v13.5A2.25 2.25 0 0 0 7.5 21h6a2.25 2.25 0 0 0 2.25-2.25V15m3.007-3H18m-3-3 3 3-3 3" />
+                <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
               </svg>
             </button>
             <h1 className="font-bold text-sm sm:text-base text-[#F8FAFC] truncate" title={test.title}>
