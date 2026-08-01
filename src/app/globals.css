@@ -50,8 +50,8 @@ body {
 
 /* Light mode overrides for Musaeum-inspired theme */
 html[data-theme="light"] {
-  --background-custom: #64625dde;
-  --surface-custom: #ddd7bea9;
+  --background-custom: #7e7d79de;
+  --surface-custom: #b4b3ada9;
   --primary-custom: #1d4ed8;
   --success-custom: #15803d;
   --warning-custom: #b45309;

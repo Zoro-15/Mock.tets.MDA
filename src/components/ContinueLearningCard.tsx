@@ -36,23 +36,25 @@ export default function ContinueLearningCard({ unfinishedAttempt, test }: Contin
         <h2 className="text-lg font-semibold text-text-primary-custom">Your Progress</h2>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div>
         {/* Continue Learning card */}
         {unfinishedAttempt && test ? (
-          <div className="p-6 bg-gradient-to-br from-surface-custom to-surface-custom/80 border border-[#334155]/60 rounded-2xl flex flex-col justify-between space-y-4">
-            <div>
-              <span className="text-xs font-semibold px-2.5 py-1 bg-warning-custom/10 text-warning-custom rounded-full uppercase tracking-wider">
-                In Progress
-              </span>
-              <h3 className="text-lg font-bold text-text-primary-custom mt-3 leading-snug">
+          <div className="p-6 bg-gradient-to-br from-surface-custom to-surface-custom/80 border border-[#334155]/60 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-2 flex-grow">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-semibold px-2.5 py-1 bg-warning-custom/10 text-warning-custom rounded-full uppercase tracking-wider">
+                  In Progress
+                </span>
+                <span className="text-xs font-semibold text-text-secondary-custom">
+                  {answeredCount} of {test.questionsCount} questions answered ({progressPct}%)
+                </span>
+              </div>
+              <h3 className="text-base font-bold text-text-primary-custom leading-snug">
                 {test.title}
               </h3>
-              <p className="text-sm text-text-secondary-custom mt-1">
-                {answeredCount} of {test.questionsCount} questions answered ({progressPct}%)
-              </p>
               
               {/* Progress bar */}
-              <div className="w-full bg-background-custom rounded-full h-1.5 mt-3 overflow-hidden">
+              <div className="w-full bg-background-custom rounded-full h-1.5 max-w-md overflow-hidden">
                 <div 
                   className="bg-warning-custom h-1.5 rounded-full transition-all duration-300"
                   style={{ width: `${progressPct}%` }}
@@ -62,7 +64,7 @@ export default function ContinueLearningCard({ unfinishedAttempt, test }: Contin
 
             <Link 
               href={`/test?attemptId=${unfinishedAttempt.id}`}
-              className="w-full text-center bg-warning-custom hover:bg-warning-custom/90 text-background-custom py-2.5 rounded-xl font-semibold text-sm transition-all shadow-sm cursor-pointer block"
+              className="w-full sm:w-auto text-center bg-warning-custom hover:bg-warning-custom/90 text-background-custom px-6 py-2 rounded-xl font-semibold text-sm transition-all shadow-sm cursor-pointer block whitespace-nowrap"
             >
               Resume Test
             </Link>
@@ -77,37 +79,6 @@ export default function ContinueLearningCard({ unfinishedAttempt, test }: Contin
             <h4 className="text-sm font-semibold text-text-primary-custom">No Unfinished Tests</h4>
           </div>
         )}
-
-        {/* Motivation Card */}
-        <div className="p-6 bg-gradient-to-br from-surface-custom to-background-custom border border-[#334155]/60 rounded-2xl flex flex-col justify-between transition-all duration-300">
-          <div>
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-semibold text-primary-custom tracking-wider uppercase">
-                Officer's Mindset
-              </span>
-              <button 
-                onClick={refreshQuote}
-                className="text-xs text-text-secondary-custom hover:text-primary-custom cursor-pointer flex items-center gap-1 transition-colors outline-none"
-                title="Next Quote"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
-                </svg>
-                <span>Shuffle</span>
-              </button>
-            </div>
-            
-            <div className="mt-4 min-h-[72px]">
-              <blockquote className="text-text-primary-custom italic font-medium border-l-2 border-primary-custom pl-4 py-1 leading-relaxed text-sm">
-                "{quote}"
-              </blockquote>
-            </div>
-          </div>
-
-          <div className="text-right text-[10px] text-text-secondary-custom/50 mt-4">
-            NDA Mock Test Platform
-          </div>
-        </div>
       </div>
     </div>
   );
