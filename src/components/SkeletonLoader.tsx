@@ -6,7 +6,7 @@ export default function SkeletonLoader({ count = 3 }: { count?: number }) {
       {Array.from({ length: count }).map((_, i) => (
         <div 
           key={i} 
-          className="p-6 bg-[#1E293B]/80 border border-[#334155]/60 rounded-xl animate-pulse space-y-4 relative overflow-hidden"
+          className="p-6 bg-surface-custom/80 border border-[#334155]/60 rounded-xl animate-pulse space-y-4 relative overflow-hidden"
         >
           <div className="flex justify-between items-center">
             <div className="h-5 bg-[#334155]/80 rounded-md w-1/3"></div>

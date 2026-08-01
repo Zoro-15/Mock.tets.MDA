@@ -49,7 +49,7 @@ export default React.memo(function LatexRenderer({ text }: LatexRendererProps) {
         trust: true
       });
     } catch (err) {
-      return `<span class="text-[#EF4444]">${math}</span>`;
+      return `<span class="text-danger-custom">${math}</span>`;
     }
   };
 

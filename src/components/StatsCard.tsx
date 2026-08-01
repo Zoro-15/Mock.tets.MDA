@@ -9,37 +9,37 @@ interface StatsCardProps {
 }
 
 export default function StatsCard({ title, value, subtitle, icon, accentColor = 'primary' }: StatsCardProps) {
-  let borderHoverClass = 'hover:border-[#3B82F6]/30';
-  let iconBgClass = 'bg-[#3B82F6]/10 text-[#3B82F6]';
+  let borderHoverClass = 'hover:border-primary-custom/30';
+  let iconBgClass = 'bg-primary-custom/10 text-primary-custom';
 
   if (accentColor === 'success') {
-    borderHoverClass = 'hover:border-[#22C55E]/30';
-    iconBgClass = 'bg-[#22C55E]/10 text-[#22C55E]';
+    borderHoverClass = 'hover:border-success-custom/30';
+    iconBgClass = 'bg-success-custom/10 text-success-custom';
   } else if (accentColor === 'warning') {
-    borderHoverClass = 'hover:border-[#F59E0B]/30';
-    iconBgClass = 'bg-[#F59E0B]/10 text-[#F59E0B]';
+    borderHoverClass = 'hover:border-warning-custom/30';
+    iconBgClass = 'bg-warning-custom/10 text-warning-custom';
   } else if (accentColor === 'danger') {
-    borderHoverClass = 'hover:border-[#EF4444]/30';
-    iconBgClass = 'bg-[#EF4444]/10 text-[#EF4444]';
+    borderHoverClass = 'hover:border-danger-custom/30';
+    iconBgClass = 'bg-danger-custom/10 text-danger-custom';
   }
 
-  let valueColorClass = 'text-[#F8FAFC]';
-  if (accentColor === 'success') valueColorClass = 'text-[#22C55E]';
-  else if (accentColor === 'warning') valueColorClass = 'text-[#F59E0B]';
-  else if (accentColor === 'danger') valueColorClass = 'text-[#EF4444]';
-  else if (accentColor === 'primary') valueColorClass = 'text-[#3B82F6]';
+  let valueColorClass = 'text-text-primary-custom';
+  if (accentColor === 'success') valueColorClass = 'text-success-custom';
+  else if (accentColor === 'warning') valueColorClass = 'text-warning-custom';
+  else if (accentColor === 'danger') valueColorClass = 'text-danger-custom';
+  else if (accentColor === 'primary') valueColorClass = 'text-primary-custom';
 
   return (
-    <div className={`p-5 bg-[#1E293B] border border-[#334155]/60 rounded-xl transition-all duration-200 ${borderHoverClass} flex items-start justify-between gap-3`}>
+    <div className={`p-5 bg-surface-custom border border-[#334155]/60 rounded-xl transition-all duration-200 ${borderHoverClass} flex items-start justify-between gap-3`}>
       <div className="space-y-1.5">
-        <span className="text-xs font-medium text-[#CBD5E1] uppercase tracking-wider block">
+        <span className="text-xs font-medium text-text-secondary-custom uppercase tracking-wider block">
           {title}
         </span>
         <div className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${valueColorClass} drop-shadow-md`}>
           {value}
         </div>
         {subtitle && (
-          <p className="text-xs text-[#CBD5E1]/60 font-medium">
+          <p className="text-xs text-text-secondary-custom/60 font-medium">
             {subtitle}
           </p>
         )}

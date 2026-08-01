@@ -1,15 +1,26 @@
 @import url("https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css");
 @import "tailwindcss";
 
+:root {
+  --background-custom: #0c0b0b;
+  --surface-custom: #51566628;
+  --primary-custom: #2865c9;
+  --success-custom: #22C55E;
+  --warning-custom: #dba03a;
+  --danger-custom: #b81f1f;
+  --text-primary-custom: #F8FAFC;
+  --text-secondary-custom: #CBD5E1;
+}
+
 @theme {
-  --color-background-custom: #0F172A;
-  --color-surface-custom: #1E293B;
-  --color-primary-custom: #3B82F6;
-  --color-success-custom: #22C55E;
-  --color-warning-custom: #F59E0B;
-  --color-danger-custom: #EF4444;
-  --color-text-primary-custom: #F8FAFC;
-  --color-text-secondary-custom: #CBD5E1;
+  --color-background-custom: var(--background-custom);
+  --color-surface-custom: var(--surface-custom);
+  --color-primary-custom: var(--primary-custom);
+  --color-success-custom: var(--success-custom);
+  --color-warning-custom: var(--warning-custom);
+  --color-danger-custom: var(--danger-custom);
+  --color-text-primary-custom: var(--text-primary-custom);
+  --color-text-secondary-custom: var(--text-secondary-custom);
 }
 
 /* Custom Scrollbar */
@@ -19,7 +30,7 @@
 }
 
 ::-webkit-scrollbar-track {
-  background: #0F172A;
+  background: var(--background-custom);
 }
 
 ::-webkit-scrollbar-thumb {
@@ -32,7 +43,71 @@
 }
 
 body {
-  background-color: #0F172A;
-  color: #F8FAFC;
+  background-color: var(--background-custom);
+  color: var(--text-primary-custom);
   font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+/* Light mode overrides for Musaeum-inspired theme */
+html[data-theme="light"] {
+  --background-custom: #8d8d86;
+  --surface-custom: #a7a799b9;
+  --primary-custom: #1c385e;
+  --success-custom: #15803d;
+  --warning-custom: #794a26;
+  --danger-custom: #8f2323;
+  --text-primary-custom: #000000;
+  --text-secondary-custom: #0c0d0e;
+}
+
+html[data-theme="light"] .border-\[\#334155\] {
+  border-color: #c7c4b8 !important;
+}
+
+html[data-theme="light"] .border-\[\#334155\]\/60 {
+  border-color: rgba(199, 196, 184, 0.6) !important;
+}
+
+html[data-theme="light"] .border-\[\#334155\]\/40 {
+  border-color: rgba(199, 196, 184, 0.4) !important;
+}
+
+html[data-theme="light"] .border-\[\#334155\]\/30 {
+  border-color: rgba(199, 196, 184, 0.3) !important;
+}
+
+html[data-theme="light"] .border-\[\#334155\]\/50 {
+  border-color: rgba(199, 196, 184, 0.5) !important;
+}
+
+html[data-theme="light"] .border-\[\#334155\]\/20 {
+  border-color: rgba(199, 196, 184, 0.2) !important;
+}
+
+html[data-theme="light"] .bg-\[\#334155\] {
+  background-color: #c7c4b8 !important;
+}
+
+html[data-theme="light"] .bg-\[\#334155\]\/40 {
+  background-color: rgba(199, 196, 184, 0.4) !important;
+}
+
+html[data-theme="light"] .bg-\[\#334155\]\/50 {
+  background-color: rgba(199, 196, 184, 0.5) !important;
+}
+
+html[data-theme="light"] .bg-\[\#334155\]\/60 {
+  background-color: rgba(199, 196, 184, 0.6) !important;
+}
+
+html[data-theme="light"] .bg-\[\#334155\]\/80 {
+  background-color: rgba(199, 196, 184, 0.8) !important;
+}
+
+html[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: #c7c4b8;
+}
+
+html[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: #b5b2a5;
 }

@@ -12,6 +12,7 @@ import QuestionCard from '../../components/QuestionCard';
 import OptionCard from '../../components/OptionCard';
 import QuestionPalette from '../../components/QuestionPalette';
 import SubmitDialog from '../../components/SubmitDialog';
+import ThemeToggle from '../../components/ThemeToggle';
 import { preload } from 'swr';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -347,7 +348,7 @@ function ActiveTestContent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+      <div className="min-h-screen bg-background-custom flex items-center justify-center">
         <LoadingSpinner />
       </div>
     );
@@ -355,10 +356,10 @@ function ActiveTestContent() {
 
   if (!attempt || !test || questions.length === 0) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center p-4">
+      <div className="min-h-screen bg-background-custom flex items-center justify-center p-4">
         <div className="max-w-md text-center">
           <EmptyState title="Attempt Session Error" message="We could not load this test session. It may have expired or been submitted." />
-          <Link href="/" className="mt-4 inline-block px-5 py-2.5 bg-[#3B82F6] text-white rounded-xl text-sm font-semibold">
+          <Link href="/" className="mt-4 inline-block px-5 py-2.5 bg-primary-custom text-white rounded-xl text-sm font-semibold">
             Go back Home
           </Link>
         </div>
@@ -375,37 +376,47 @@ function ActiveTestContent() {
   const positiveMarks = test.marks / test.questionsCount;
 
   return (
-    <div className="min-h-screen bg-[#0F172A] text-[#F8FAFC] flex flex-col justify-between select-none">
+    <div className="min-h-screen bg-background-custom text-text-primary-custom flex flex-col justify-between select-none">
       
       {/* Top Navbar */}
-      <header className="border-b border-[#334155]/60 bg-[#1E293B]/95 backdrop-blur-md sticky top-0 z-40 shadow-md">
+      <header className="border-b border-[#334155]/60 bg-surface-custom/95 backdrop-blur-md sticky top-0 z-40 shadow-md">
         {/* Progress Bar */}
-        <div className="absolute top-0 left-0 h-1 bg-[#3B82F6] transition-all duration-500 rounded-r-full" style={{ width: `${(attemptedCount / questions.length) * 100}%` }} />
+        <div className="absolute top-0 left-0 h-1 bg-primary-custom transition-all duration-500 rounded-r-full" style={{ width: `${(attemptedCount / questions.length) * 100}%` }} />
         
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 max-w-[60%]">
             <button 
               onClick={handlePause}
-              className="text-[#CBD5E1] hover:text-[#F8FAFC] p-1.5 hover:bg-[#0F172A]/40 rounded-lg cursor-pointer transition-colors"
+              className="text-text-secondary-custom hover:text-text-primary-custom p-1.5 hover:bg-background-custom/40 rounded-lg cursor-pointer transition-colors"
               title="Pause test"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
               </svg>
             </button>
-            <h1 className="font-bold text-sm sm:text-base text-[#F8FAFC] truncate" title={test.title}>
+            <h1 className="font-bold text-sm sm:text-base text-text-primary-custom truncate" title={test.title}>
               {test.title}
             </h1>
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
             {/* Timer component */}
             <Timer initialTimeLeft={initialTime} onTick={handleTick} isPaused={loading || !attempt || attempt.completed || submitDialogOpen} />
+
+            {/* Language Placeholder icon */}
+            <div className="w-8 h-8 rounded-lg bg-background-custom/40 border border-[#334155]/60 flex items-center justify-center text-text-secondary-custom" title="English Only">
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4.5 h-4.5">
+                <path strokeLinecap="round" strokeLinejoin="round" d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896 3.066 2.19 5.752 3.816 7.778" />
+              </svg>
+            </div>
 
             {/* Palette toggle button */}
             <button
               onClick={() => setPaletteOpen(!paletteOpen)}
-              className="w-8 h-8 flex items-center justify-center bg-[#1E293B] border border-[#334155]/60 hover:bg-[#334155]/60 text-[#CBD5E1] hover:text-[#F8FAFC] rounded-lg cursor-pointer md:hidden transition-colors"
+              className="p-2 bg-primary-custom hover:bg-primary-custom/90 text-white rounded-lg cursor-pointer md:hidden shadow-sm transition-colors"
               title="Open palette"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
@@ -433,9 +444,9 @@ function ActiveTestContent() {
               >
                 {/* Section Header */}
                 {activeQuestion.section && (
-                  <div className="bg-[#1E293B]/70 border border-[#334155]/60 rounded-xl px-4 py-2 inline-flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-[#3B82F6]"></span>
-                    <span className="text-sm font-bold text-[#F8FAFC]">{activeQuestion.section}</span>
+                  <div className="bg-surface-custom/70 border border-[#334155]/60 rounded-xl px-4 py-2 inline-flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-primary-custom"></span>
+                    <span className="text-sm font-bold text-text-primary-custom">{activeQuestion.section}</span>
                   </div>
                 )}
                 {/* Question Card */}
@@ -469,17 +480,17 @@ function ActiveTestContent() {
           <div className="flex-grow" />
 
           {/* Bottom Action Bar */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-[#334155]/40 pt-4 bg-[#0F172A] sticky bottom-0 z-20">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-[#334155]/40 pt-4 bg-background-custom sticky bottom-0 z-20">
             <div className="flex flex-row items-center gap-3 w-full sm:w-auto">
               <button
                 onClick={handleMarkAndNext}
-                className="flex-1 sm:flex-none px-3 sm:px-5 py-3 bg-[#F59E0B]/10 hover:bg-[#F59E0B]/20 active:scale-95 border border-[#F59E0B]/50 text-[#F59E0B] rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all cursor-pointer outline-none text-center"
+                className="flex-1 sm:flex-none px-3 sm:px-5 py-3 bg-warning-custom/10 hover:bg-warning-custom/20 active:scale-95 border border-warning-custom/50 text-warning-custom rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all cursor-pointer outline-none text-center"
               >
                 MARK & NEXT
               </button>
               <button
                 onClick={handleClearResponse}
-                className="flex-1 sm:flex-none px-3 sm:px-5 py-3 border border-[#334155]/60 text-[#CBD5E1] hover:text-[#F8FAFC] hover:bg-[#1E293B]/40 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-colors cursor-pointer outline-none text-center"
+                className="flex-1 sm:flex-none px-3 sm:px-5 py-3 border border-[#334155]/60 text-text-secondary-custom hover:text-text-primary-custom hover:bg-surface-custom/40 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-colors cursor-pointer outline-none text-center"
               >
                 CLEAR RESPONSE
               </button>
@@ -487,7 +498,7 @@ function ActiveTestContent() {
             
             <button
               onClick={handleSaveAndNext}
-              className="w-full sm:w-auto px-6 py-3 bg-[#3B82F6] hover:bg-[#2563EB] active:scale-95 text-white rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all shadow-md shadow-[#3B82F6]/20 hover:shadow-[#3B82F6]/40 cursor-pointer outline-none text-center"
+              className="w-full sm:w-auto px-6 py-3 bg-primary-custom hover:bg-[#2563EB] active:scale-95 text-white rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all shadow-md shadow-primary-custom/20 hover:shadow-primary-custom/40 cursor-pointer outline-none text-center"
             >
               SAVE & NEXT
             </button>
@@ -539,7 +550,7 @@ function ActiveTestContent() {
 export default function TestPage() {
   return (
     <Suspense fallback={
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
+      <div className="min-h-screen bg-background-custom flex items-center justify-center">
         <LoadingSpinner />
       </div>
     }>

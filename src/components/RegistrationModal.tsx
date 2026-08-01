@@ -62,20 +62,20 @@ export default function RegistrationModal({ onSuccess }: RegistrationModalProps)
       <div className="absolute inset-0 bg-black/80 backdrop-blur-md" />
 
       {/* Modal Card */}
-      <div className="relative w-full max-w-md bg-[#1E293B] border border-[#334155] rounded-2xl shadow-2xl overflow-hidden z-10 p-6 sm:p-8 space-y-6">
+      <div className="relative w-full max-w-md bg-surface-custom border border-[#334155] rounded-2xl shadow-2xl overflow-hidden z-10 p-6 sm:p-8 space-y-6">
         <div className="text-center space-y-2">
           {/* Circular Badge */}
-          <div className="w-12 h-12 bg-[#3B82F6]/10 text-[#3B82F6] border border-[#3B82F6]/20 rounded-xl flex items-center justify-center mx-auto text-xl font-bold">
+          <div className="w-12 h-12 bg-primary-custom/10 text-primary-custom border border-primary-custom/20 rounded-xl flex items-center justify-center mx-auto text-xl font-bold">
             ⚔️
           </div>
-          <h2 className="text-xl font-extrabold text-[#F8FAFC]">Cadet Portal Registration</h2>
-          <p className="text-xs text-[#CBD5E1]/60 leading-relaxed">
+          <h2 className="text-xl font-extrabold text-text-primary-custom">Cadet Portal Registration</h2>
+          <p className="text-xs text-text-secondary-custom/60 leading-relaxed">
             Enter your details to track attempts and compete on the leaderboard.
           </p>
         </div>
 
         {/* Tab Controls */}
-        <div className="flex bg-[#0F172A] p-1 rounded-xl border border-[#334155]/40 select-none">
+        <div className="flex bg-background-custom p-1 rounded-xl border border-[#334155]/40 select-none">
           <button
             onClick={() => {
               setActiveTab('register');
@@ -83,8 +83,8 @@ export default function RegistrationModal({ onSuccess }: RegistrationModalProps)
             }}
             className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-colors outline-none cursor-pointer ${
               activeTab === 'register' 
-                ? 'bg-[#3B82F6] text-white shadow-sm' 
-                : 'text-[#CBD5E1] hover:text-[#F8FAFC]'
+                ? 'bg-primary-custom text-white shadow-sm' 
+                : 'text-text-secondary-custom hover:text-text-primary-custom'
             }`}
           >
             Register Cadet
@@ -96,8 +96,8 @@ export default function RegistrationModal({ onSuccess }: RegistrationModalProps)
             }}
             className={`flex-1 py-2 text-center text-xs font-bold rounded-lg transition-colors outline-none cursor-pointer ${
               activeTab === 'login' 
-                ? 'bg-[#3B82F6] text-white shadow-sm' 
-                : 'text-[#CBD5E1] hover:text-[#F8FAFC]'
+                ? 'bg-primary-custom text-white shadow-sm' 
+                : 'text-text-secondary-custom hover:text-text-primary-custom'
             }`}
           >
             Sign In (PIN)
@@ -108,7 +108,7 @@ export default function RegistrationModal({ onSuccess }: RegistrationModalProps)
         <form onSubmit={handleSubmit} className="space-y-4">
           
           {error && (
-            <div className="p-3 bg-[#EF4444]/10 border border-[#EF4444]/20 rounded-xl text-xs text-[#EF4444] font-semibold text-center leading-relaxed">
+            <div className="p-3 bg-danger-custom/10 border border-danger-custom/20 rounded-xl text-xs text-danger-custom font-semibold text-center leading-relaxed">
               {error}
             </div>
           )}
@@ -116,7 +116,7 @@ export default function RegistrationModal({ onSuccess }: RegistrationModalProps)
           {activeTab === 'register' && (
             <>
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-[#CBD5E1] uppercase tracking-wider block">
+                <label className="text-[10px] font-bold text-text-secondary-custom uppercase tracking-wider block">
                   Full Name
                 </label>
                 <input
@@ -124,12 +124,12 @@ export default function RegistrationModal({ onSuccess }: RegistrationModalProps)
                   placeholder="Enter your name (e.g. Karan Johar)"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-[#0F172A] border border-[#334155]/60 rounded-xl text-[#F8FAFC] placeholder-[#CBD5E1]/30 text-sm focus:outline-none focus:border-[#3B82F6] transition-colors"
+                  className="w-full px-4 py-2.5 bg-background-custom border border-[#334155]/60 rounded-xl text-text-primary-custom placeholder-text-secondary-custom/30 text-sm focus:outline-none focus:border-primary-custom transition-colors"
                 />
               </div>
 
               <div className="space-y-1.5">
-                <label className="text-[10px] font-bold text-[#CBD5E1] uppercase tracking-wider block">
+                <label className="text-[10px] font-bold text-text-secondary-custom uppercase tracking-wider block">
                   Cadet Number / Roll ID
                 </label>
                 <input
@@ -137,14 +137,14 @@ export default function RegistrationModal({ onSuccess }: RegistrationModalProps)
                   placeholder="Enter Cadet Code (e.g. C-1095)"
                   value={cadetNumber}
                   onChange={(e) => setCadetNumber(e.target.value)}
-                  className="w-full px-4 py-2.5 bg-[#0F172A] border border-[#334155]/60 rounded-xl text-[#F8FAFC] placeholder-[#CBD5E1]/30 text-sm focus:outline-none focus:border-[#3B82F6] transition-colors"
+                  className="w-full px-4 py-2.5 bg-background-custom border border-[#334155]/60 rounded-xl text-text-primary-custom placeholder-text-secondary-custom/30 text-sm focus:outline-none focus:border-primary-custom transition-colors"
                 />
               </div>
             </>
           )}
 
           <div className="space-y-1.5">
-            <label className="text-[10px] font-bold text-[#CBD5E1] uppercase tracking-wider block">
+            <label className="text-[10px] font-bold text-text-secondary-custom uppercase tracking-wider block">
               4-Digit PIN Code
             </label>
             <input
@@ -153,9 +153,9 @@ export default function RegistrationModal({ onSuccess }: RegistrationModalProps)
               placeholder="••••"
               value={studentCode}
               onChange={(e) => setStudentCode(e.target.value.replace(/\D/g, ''))}
-              className="w-full px-4 py-2.5 bg-[#0F172A] border border-[#334155]/60 rounded-xl text-[#F8FAFC] placeholder-[#CBD5E1]/30 text-center tracking-widest font-mono text-base focus:outline-none focus:border-[#3B82F6] transition-colors"
+              className="w-full px-4 py-2.5 bg-background-custom border border-[#334155]/60 rounded-xl text-text-primary-custom placeholder-text-secondary-custom/30 text-center tracking-widest font-mono text-base focus:outline-none focus:border-primary-custom transition-colors"
             />
-            <span className="text-[10px] text-[#CBD5E1]/40 block text-right mt-1 font-medium">
+            <span className="text-[10px] text-text-secondary-custom/40 block text-right mt-1 font-medium">
               Numeric PIN code to verify session.
             </span>
           </div>
@@ -163,7 +163,7 @@ export default function RegistrationModal({ onSuccess }: RegistrationModalProps)
           <button
             type="submit"
             disabled={loading}
-            className="w-full py-3 bg-[#3B82F6] hover:bg-[#3B82F6]/90 text-white rounded-xl text-sm font-bold tracking-wide shadow-md shadow-[#3B82F6]/10 transition-colors cursor-pointer outline-none flex items-center justify-center"
+            className="w-full py-3 bg-primary-custom hover:bg-primary-custom/90 text-white rounded-xl text-sm font-bold tracking-wide shadow-md shadow-primary-custom/10 transition-colors cursor-pointer outline-none flex items-center justify-center"
           >
             {loading ? (
               <div className="w-5 h-5 border-2 border-white/20 border-t-white rounded-full animate-spin" />
