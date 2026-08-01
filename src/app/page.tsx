@@ -141,7 +141,7 @@ export default function HomePage() {
             {/* Previous Year Papers */}
             <Link 
               href="/previous-year"
-              className="group p-6 bg-[#1E293B] border border-[#334155]/60 rounded-2xl hover:border-[#3B82F6]/50 transition-all hover:-translate-y-1 flex flex-col justify-between h-52 relative overflow-hidden cursor-pointer"
+              className="group p-6 bg-[#1E293B] border border-[#334155]/60 rounded-2xl hover:border-[#3B82F6]/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] transition-all hover:-translate-y-1 hover:scale-[1.02] flex flex-col justify-between h-52 relative overflow-hidden cursor-pointer"
             >
               <div className="space-y-2">
                 <div className="w-10 h-10 bg-[#3B82F6]/10 rounded-xl flex items-center justify-center text-[#3B82F6] group-hover:bg-[#3B82F6] group-hover:text-white transition-colors duration-300">
@@ -163,7 +163,7 @@ export default function HomePage() {
             {/* Mathematics Super Pack */}
             <Link 
               href="/maths-pack"
-              className="group p-6 bg-[#1E293B] border border-[#334155]/60 rounded-2xl hover:border-[#3B82F6]/50 transition-all hover:-translate-y-1 flex flex-col justify-between h-52 relative overflow-hidden cursor-pointer"
+              className="group p-6 bg-[#1E293B] border border-[#334155]/60 rounded-2xl hover:border-[#3B82F6]/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] transition-all hover:-translate-y-1 hover:scale-[1.02] flex flex-col justify-between h-52 relative overflow-hidden cursor-pointer"
             >
               <div className="space-y-2">
                 <div className="w-10 h-10 bg-[#3B82F6]/10 rounded-xl flex items-center justify-center text-[#3B82F6] group-hover:bg-[#3B82F6] group-hover:text-white transition-colors duration-300">
@@ -185,7 +185,7 @@ export default function HomePage() {
             {/* Full Mock Tests */}
             <Link 
               href="/full-mocks"
-              className="group p-6 bg-[#1E293B] border border-[#334155]/60 rounded-2xl hover:border-[#3B82F6]/50 transition-all hover:-translate-y-1 flex flex-col justify-between h-52 relative overflow-hidden cursor-pointer"
+              className="group p-6 bg-[#1E293B] border border-[#334155]/60 rounded-2xl hover:border-[#3B82F6]/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] transition-all hover:-translate-y-1 hover:scale-[1.02] flex flex-col justify-between h-52 relative overflow-hidden cursor-pointer"
             >
               <div className="space-y-2">
                 <div className="w-10 h-10 bg-[#3B82F6]/10 rounded-xl flex items-center justify-center text-[#3B82F6] group-hover:bg-[#3B82F6] group-hover:text-white transition-colors duration-300">

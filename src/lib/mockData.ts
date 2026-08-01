@@ -415,42 +415,212 @@ const gatQuestionPool: Omit<Question, 'id'>[] = [
   }
 ];
 
-// Helper to get questions dynamically
 export function generateQuestionsForTest(testId: string): Question[] {
   const test = allTests.find(t => t.id === testId);
   if (!test) return [];
 
-  const pool = test.subCategory === 'gat' ? gatQuestionPool : mathQuestionPool;
   const list: Question[] = [];
+  const testNumber = parseInt(testId.replace(/\D/g, '')) || 1;
 
   for (let i = 0; i < test.questionsCount; i++) {
-    const template = pool[i % pool.length];
-    
-    // Create custom questions with index so they look unique
     const num = i + 1;
-    let questionText = template.questionText;
-    let assertionText = template.assertionText || '';
-    let reasonText = template.reasonText || '';
-    let explanation = template.explanation;
-    
-    // Inject the actual question number to feel dynamic
-    if (template.type === 'assertion-reason') {
-      questionText = `[Q.${num}] ${template.questionText}`;
-    } else {
-      questionText = `[Q.${num}] ${template.questionText}`;
-    }
+    const qId = `${testId}-q-${num}`;
+    const title = test.title;
 
-    list.push({
-      id: `${testId}-q-${num}`,
-      type: template.type,
-      questionText,
-      assertionText: assertionText || undefined,
-      reasonText: reasonText || undefined,
-      tableData: template.tableData,
-      options: [...template.options],
-      correctOptionIndex: template.correctOptionIndex,
-      explanation
-    });
+    if (test.subCategory === 'gat') {
+      const section = num <= 50 ? 'Part A: English (Questions 1-50)' : 'Part B: General Knowledge (Questions 51-150)';
+      
+      if (num <= 50) {
+        const vocab = [
+          { w: "Obstinate", s: "Stubborn", a: "Flexible" }, { w: "Transparent", s: "Clear", a: "Opaque" },
+          { w: "Diligent", s: "Hardworking", a: "Lazy" }, { w: "Resilient", s: "Tough", a: "Fragile" },
+          { w: "Candid", s: "Frank", a: "Deceitful" }, { w: "Meticulous", s: "Careful", a: "Careless" },
+          { w: "Valiant", s: "Brave", a: "Cowardly" }, { w: "Pragmatic", s: "Practical", a: "Impractical" },
+          { w: "Benevolent", s: "Kind", a: "Cruel" }, { w: "Gregarious", s: "Sociable", a: "Introverted" },
+          { w: "Lucid", s: "Clear", a: "Confusing" }, { w: "Ephemeral", s: "Short-lived", a: "Permanent" },
+          { w: "Mitigate", s: "Reduce", a: "Increase" }, { w: "Alleviate", s: "Ease", a: "Worsen" },
+          { w: "Profound", s: "Deep", a: "Shallow" }, { w: "Ambiguous", s: "Unclear", a: "Explicit" },
+          { w: "Frugal", s: "Thrifty", a: "Wasteful" }, { w: "Intrepid", s: "Fearless", a: "Timid" },
+          { w: "Jovial", s: "Cheerful", a: "Gloomy" }, { w: "Keen", s: "Sharp", a: "Dull" },
+          { w: "Lethargic", s: "Sluggish", a: "Energetic" }, { w: "Novice", s: "Beginner", a: "Expert" },
+          { w: "Obsolete", s: "Outdated", a: "Current" }, { w: "Placid", s: "Calm", a: "Turbulent" },
+          { w: "Quell", s: "Suppress", a: "Encourage" }
+        ];
+        
+        const isSynonym = num % 2 === 1;
+        const vIdx = ((num - 1) + testNumber) % vocab.length;
+        const item = vocab[vIdx];
+        
+        const questionText = isSynonym 
+          ? `[Q.${num}] What is the closest synonym for the word '${item.w}'?`
+          : `[Q.${num}] Select the best antonym for the word '${item.w}'.`;
+          
+        const correctAns = isSynonym ? item.s : item.a;
+        
+        // Pick 3 distractors from other vocab items
+        const d1 = vocab[(vIdx + 1) % vocab.length][isSynonym ? 's' : 'a'];
+        const d2 = vocab[(vIdx + 2) % vocab.length][isSynonym ? 'a' : 's'];
+        const d3 = vocab[(vIdx + 3) % vocab.length][isSynonym ? 's' : 'a'];
+        
+        const options = [correctAns, d1, d2, d3];
+        // Scramble based on testNumber
+        const correctIdx = (num + testNumber) % 4;
+        options[0] = options[correctIdx];
+        options[correctIdx] = correctAns;
+        
+        list.push({
+          id: qId,
+          type: 'text',
+          questionText,
+          options,
+          correctOptionIndex: correctIdx,
+          explanation: `The ${isSynonym ? 'synonym' : 'antonym'} of ${item.w} is ${correctAns}.`,
+          section
+        });
+      } else {
+        const gkFacts = [
+          { q: "Who was the founder of the Brahmo Samaj?", ans: "Raja Ram Mohan Roy", d: ["Swami Vivekananda", "Dayananda Saraswati", "Ishwar Chandra"] },
+          { q: "What is the main constituent of Liquefied Petroleum Gas (LPG)?", ans: "Butane", d: ["Methane", "Ethane", "Hydrogen"] },
+          { q: "An object placed at the principal focus of a concave mirror forms an image at:", ans: "Infinity", d: ["Focus", "Center of Curvature", "Pole"] },
+          { q: "The 'Directive Principles of State Policy' were borrowed from the constitution of:", ans: "Ireland", d: ["USA", "UK", "USSR"] },
+          { q: "Which planet is known as the 'Morning Star'?", ans: "Venus", d: ["Mars", "Jupiter", "Mercury"] },
+          { q: "Which acid is present in red ants?", ans: "Formic Acid", d: ["Acetic Acid", "Malic Acid", "Nitric Acid"] },
+          { q: "Who discovered Penicillin?", ans: "Alexander Fleming", d: ["Marie Curie", "Isaac Newton", "Albert Einstein"] },
+          { q: "What is the SI unit of Force?", ans: "Newton", d: ["Joule", "Watt", "Pascal"] },
+          { q: "Which blood group is the universal donor?", ans: "O-", d: ["A+", "B+", "AB+"] },
+          { q: "Who wrote the Indian National Anthem?", ans: "Rabindranath Tagore", d: ["Bankim Chandra", "Sarojini Naidu", "Mahatma Gandhi"] },
+          { q: "What is the chemical formula of Water?", ans: "H2O", d: ["CO2", "O2", "NaCl"] },
+          { q: "Which is the largest ocean on Earth?", ans: "Pacific Ocean", d: ["Atlantic Ocean", "Indian Ocean", "Arctic Ocean"] },
+          { q: "Who is known as the Missile Man of India?", ans: "APJ Abdul Kalam", d: ["Vikram Sarabhai", "Homi Bhabha", "C.V. Raman"] },
+          { q: "Which gas is most abundant in the Earth's atmosphere?", ans: "Nitrogen", d: ["Oxygen", "Carbon Dioxide", "Hydrogen"] },
+          { q: "What is the capital of Australia?", ans: "Canberra", d: ["Sydney", "Melbourne", "Perth"] },
+          { q: "Who painted the Mona Lisa?", ans: "Leonardo da Vinci", d: ["Vincent van Gogh", "Pablo Picasso", "Michelangelo"] },
+          { q: "Which is the smallest continent?", ans: "Australia", d: ["Europe", "Antarctica", "South America"] },
+          { q: "What is the hardest natural substance on Earth?", ans: "Diamond", d: ["Gold", "Iron", "Platinum"] },
+          { q: "In which year did India gain independence?", ans: "1947", d: ["1945", "1950", "1952"] },
+          { q: "What is the boiling point of water in Celsius?", ans: "100", d: ["90", "110", "120"] }
+        ];
+
+        const fIdx = ((num - 51) + testNumber) % gkFacts.length;
+        const fact = gkFacts[fIdx];
+        
+        const questionText = `[Q.${num}] ${fact.q}`;
+        const options = [fact.ans, fact.d[0], fact.d[1], fact.d[2]];
+        
+        // Scramble based on testNumber
+        const correctIdx = (num + testNumber) % 4;
+        options[0] = options[correctIdx];
+        options[correctIdx] = fact.ans;
+
+        list.push({
+          id: qId,
+          type: 'text',
+          questionText,
+          options,
+          correctOptionIndex: correctIdx,
+          explanation: `The correct answer is ${fact.ans}.`,
+          section
+        });
+      }
+    } else {
+      // Math
+      const upperLimit = testNumber;
+      const coeff = testNumber * num;
+      
+      const mathTemplates = [
+        {
+          text: `Evaluate the integral:\n\n$$\\int_{0}^{${upperLimit}} ${coeff}x^2 \\, dx$$`,
+          ops: [`$${coeff}$`, `$${coeff * 2}$`, `$${coeff * 3}$`, `$${coeff * 4}$`]
+        },
+        {
+          text: `Find the determinant of the matrix $A$:\n\n$$A = \\begin{pmatrix} ${coeff} & 2 \\\\ 1 & ${upperLimit} \\end{pmatrix}$$`,
+          ops: [`$${(coeff * upperLimit) - 2}$`, `$${coeff * upperLimit}$`, `$${coeff + upperLimit}$`, `$${coeff - upperLimit}$`]
+        },
+        {
+          text: `Evaluate the limit:\n\n$$\\lim_{x \\to 0} \\frac{\\sin(${coeff}x)}{${upperLimit}x}$$`,
+          ops: [`$\\frac{${coeff}}{${upperLimit}}$`, `$${coeff}$`, `$${upperLimit}$`, `$0$`]
+        },
+        {
+          text: `Find the derivative of $f(x) = ${coeff}x^{${upperLimit}}$ with respect to $x$, evaluated at $x = 1$.`,
+          ops: [`$${coeff * upperLimit}$`, `$${coeff}$`, `$${upperLimit}$`, `$${coeff + upperLimit}$`]
+        },
+        {
+          text: `Given vector $\\vec{a} = ${coeff}\\hat{i} + ${upperLimit}\\hat{j}$, find the square of its magnitude $|\\vec{a}|^2$.`,
+          ops: [`$${(coeff*coeff) + (upperLimit*upperLimit)}$`, `$${coeff + upperLimit}$`, `$${coeff * upperLimit}$`, `$${(coeff*coeff) - (upperLimit*upperLimit)}$`]
+        },
+        {
+          text: `Find the modulus of the complex number $z = ${coeff} + ${upperLimit}i$.`,
+          ops: [`$\\sqrt{${(coeff*coeff) + (upperLimit*upperLimit)}}$`, `$${coeff + upperLimit}$`, `$${(coeff*coeff) + (upperLimit*upperLimit)}$`, `$${coeff}$`]
+        },
+        {
+          text: `If the $n^{th}$ term of an Arithmetic Progression is $T_n = ${coeff}n + ${upperLimit}$, find the first term $T_1$.`,
+          ops: [`$${coeff + upperLimit}$`, `$${coeff}$`, `$${upperLimit}$`, `$${coeff * upperLimit}$`]
+        },
+        {
+          text: `Find the discriminant of the quadratic equation $x^2 + ${coeff}x + ${upperLimit} = 0$.`,
+          ops: [`$${coeff * coeff - 4 * upperLimit}$`, `$${coeff * coeff + 4 * upperLimit}$`, `$${coeff * coeff - upperLimit}$`, `$${coeff - 4 * upperLimit}$`]
+        },
+        {
+          text: `Simplify the trigonometric expression: $\\cos^2(${coeff}x) + \\sin^2(${coeff}x) + ${upperLimit}$.`,
+          ops: [`$${1 + upperLimit}$`, `$${upperLimit}$`, `$${coeff + upperLimit}$`, `$${coeff}$`]
+        },
+        {
+          text: `Find the sum of the first ${upperLimit} natural numbers multiplied by ${coeff}.`,
+          ops: [`$${coeff * (upperLimit * (upperLimit + 1)) / 2}$`, `$${coeff * upperLimit}$`, `$${(upperLimit * (upperLimit + 1)) / 2}$`, `$${coeff + upperLimit}$`]
+        },
+        {
+          text: `Find the maximum value of $f(x) = -x^2 + ${coeff}x - ${upperLimit}$.`,
+          ops: [`$\\frac{${coeff * coeff - 4 * upperLimit}}{4}$`, `$${coeff}$`, `$${upperLimit}$`, `$0$`]
+        },
+        {
+          text: `A line passes through $(0, ${coeff})$ and $( ${upperLimit}, 0)$. Find its slope.`,
+          ops: [`$-\\frac{${coeff}}{${upperLimit}}$`, `$\\frac{${coeff}}{${upperLimit}}$`, `$${coeff}$`, `$-${upperLimit}$`]
+        },
+        {
+          text: `Find the area of a rectangle with length ${coeff} and width ${upperLimit}.`,
+          ops: [`$${coeff * upperLimit}$`, `$${2 * (coeff + upperLimit)}$`, `$${coeff + upperLimit}$`, `$${coeff / upperLimit}$`]
+        },
+        {
+          text: `If $A$ and $B$ are independent events with $P(A) = \\frac{1}{${upperLimit + 1}}$ and $P(B) = \\frac{1}{${coeff + 1}}$, find $P(A \\cap B)$.`,
+          ops: [`$\\frac{1}{${(upperLimit + 1) * (coeff + 1)}}$`, `$\\frac{1}{${upperLimit + coeff + 2}}$`, `$\\frac{${upperLimit + 1}}{${coeff + 1}}$`, `$1$`]
+        },
+        {
+          text: `Find the value of $k$ if the vectors $k\\hat{i} + ${coeff}\\hat{j}$ and $${upperLimit}\\hat{i} - \\hat{j}$ are perpendicular.`,
+          ops: [`$\\frac{${coeff}}{${upperLimit}}$`, `$${coeff * upperLimit}$`, `$-\\frac{${coeff}}{${upperLimit}}$`, `$${coeff}$`]
+        },
+        {
+          text: `Evaluate $\\log_{${upperLimit + 1}} (${upperLimit + 1}^{${coeff}})$.`,
+          ops: [`$${coeff}$`, `$${upperLimit + 1}$`, `$${coeff * (upperLimit + 1)}$`, `$0$`]
+        },
+        {
+          text: `Find the distance between the origin and the point $(${coeff}, ${upperLimit})$.`,
+          ops: [`$\\sqrt{${coeff*coeff + upperLimit*upperLimit}}$`, `$${coeff + upperLimit}$`, `$${coeff*coeff + upperLimit*upperLimit}$`, `$${coeff}$`]
+        },
+        {
+          text: `Calculate the factorial expression: $\\frac{${upperLimit + 2}!}{${upperLimit}!}$.`,
+          ops: [`$${(upperLimit + 2) * (upperLimit + 1)}$`, `$${upperLimit + 2}$`, `$${upperLimit + 1}$`, `$0$`]
+        },
+        {
+          text: `Find the radius of the circle given by $x^2 + y^2 = ${coeff * coeff}$.`,
+          ops: [`$${coeff}$`, `$${coeff * coeff}$`, `$${2 * coeff}$`, `$${coeff / 2}$`]
+        },
+        {
+          text: `What is the dot product of $\\vec{u} = ${coeff}\\hat{i}$ and $\\vec{v} = ${upperLimit}\\hat{i}$?`,
+          ops: [`$${coeff * upperLimit}$`, `$${coeff + upperLimit}$`, `$0$`, `$1$`]
+        }
+      ];
+
+      const tmpl = mathTemplates[num % mathTemplates.length];
+      
+      list.push({
+        id: qId,
+        type: 'latex',
+        questionText: tmpl.text,
+        options: tmpl.ops,
+        correctOptionIndex: num % 4,
+        explanation: `Explanation for math question ${num} of ${title}.`
+      });
+    }
   }
 
   return list;

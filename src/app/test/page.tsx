@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Attempt, Test, Question, QuestionResponse } from '../../lib/types';
-import { getAttempt, getTestById, getQuestionsForTest, syncAttemptProgress, submitAttemptToSupabase } from '../../lib/db';
+import { getAttempt, getTestById, getQuestionsForTest, getLeaderboardForTest, syncAttemptProgress, submitAttemptToSupabase } from '../../lib/db';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import Timer from '../../components/Timer';
@@ -12,6 +12,7 @@ import QuestionCard from '../../components/QuestionCard';
 import OptionCard from '../../components/OptionCard';
 import QuestionPalette from '../../components/QuestionPalette';
 import SubmitDialog from '../../components/SubmitDialog';
+import { preload } from 'swr';
 
 function ActiveTestContent() {
   const router = useRouter();
@@ -103,6 +104,17 @@ function ActiveTestContent() {
     });
 
     await submitAttemptToSupabase(attemptId, finalResponses, timeLeft);
+    
+    // Preload analysis data instantly using SWR
+    preload(attemptId ? `analysis-${attemptId}` : null, async () => {
+      const att = await getAttempt(attemptId);
+      if (!att) throw new Error("Attempt not found");
+      const t = getTestById(att.testId);
+      const q = await getQuestionsForTest(att.testId);
+      const board = await getLeaderboardForTest(att.testId);
+      return { attempt: att, test: t, questions: q, leaderboard: board };
+    });
+    
     router.push(`/analysis?attemptId=${attemptId}`);
   }, [attemptId, responses, timeLeft, router]);
 
@@ -113,34 +125,44 @@ function ActiveTestContent() {
     }
   }, [timeLeft, loading, attempt, handleFinalSubmit]);
 
+  // Refs for timer dependencies to avoid tearing down the interval
+  const timerStateRef = useRef({ responses, currentIndex, activeQuestion, saveProgress });
+  useEffect(() => {
+    timerStateRef.current = { responses, currentIndex, activeQuestion, saveProgress };
+  }, [responses, currentIndex, activeQuestion, saveProgress]);
+
   // Clock tick interval
   useEffect(() => {
     if (loading || !attempt || attempt.completed || submitDialogOpen) return;
 
     const timer = setInterval(() => {
+      const state = timerStateRef.current;
+      
+      // 1. Mutate timeSpentRef OUTSIDE the state updater to prevent React StrictMode double-ticks
+      if (state.activeQuestion) {
+        const currentQId = state.activeQuestion.id;
+        timeSpentRef.current[currentQId] = (timeSpentRef.current[currentQId] || 0) + 1;
+      }
+
+      // 2. Pure state updater
       setTimeLeft((prev) => {
         const nextTime = prev - 1;
         
         // Auto-save every 10 seconds to localStorage
         if (nextTime % 10 === 0) {
-          // Sync current question time spent into responses object for the save
-          const responsesToSave = { ...responses };
-          if (activeQuestion) {
-            const currentQId = activeQuestion.id;
-            const curTimeSpent = timeSpentRef.current[currentQId] || 0;
-            timeSpentRef.current[currentQId] = curTimeSpent + 1;
+          const responsesToSave = { ...state.responses };
+          if (state.activeQuestion) {
+            const currentQId = state.activeQuestion.id;
             responsesToSave[currentQId] = {
               ...responsesToSave[currentQId],
               timeSpent: timeSpentRef.current[currentQId]
             };
           }
-          saveProgress(responsesToSave, nextTime, currentIndex);
-        } else {
-          // Still increment question time spent ref
-          if (activeQuestion) {
-            const currentQId = activeQuestion.id;
-            timeSpentRef.current[currentQId] = (timeSpentRef.current[currentQId] || 0) + 1;
-          }
+          
+          // Escape the state updater context to prevent double-saving in StrictMode
+          setTimeout(() => {
+            state.saveProgress(responsesToSave, nextTime, state.currentIndex);
+          }, 0);
         }
 
         return nextTime;
@@ -148,7 +170,7 @@ function ActiveTestContent() {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [loading, attempt, responses, currentIndex, activeQuestion, saveProgress, submitDialogOpen]);
+  }, [loading, attempt, submitDialogOpen]);
 
   // Action methods
   const selectOption = useCallback((optIdx: number) => {
@@ -336,14 +358,16 @@ function ActiveTestContent() {
   const unattemptedCount = list.filter(r => r.selectedOptionIndex === null && r.status === 'unattempted').length;
   const markedCount = list.filter(r => r.status === 'marked' || r.status === 'marked-attempted').length;
 
-  // Marks details
-  const positiveMarks = test.subCategory === 'gat' ? 4.0 : 2.5;
+  const positiveMarks = test.marks / test.questionsCount;
 
   return (
     <div className="min-h-screen bg-[#0F172A] text-[#F8FAFC] flex flex-col justify-between select-none">
       
       {/* Top Navbar */}
-      <header className="border-b border-[#334155]/60 bg-[#1E293B] sticky top-0 z-30">
+      <header className="border-b border-[#334155]/60 bg-[#1E293B]/95 backdrop-blur-md sticky top-0 z-40 shadow-md">
+        {/* Progress Bar */}
+        <div className="absolute top-0 left-0 h-1 bg-[#3B82F6] transition-all duration-500 rounded-r-full" style={{ width: `${(attemptedCount / questions.length) * 100}%` }} />
+        
         <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
           <div className="flex items-center gap-2 max-w-[60%]">
             <button 
@@ -392,6 +416,13 @@ function ActiveTestContent() {
         <div className="flex-1 flex flex-col justify-between space-y-6 pr-1">
           {activeQuestion ? (
             <div className="space-y-6">
+              {/* Section Header */}
+              {activeQuestion.section && (
+                <div className="bg-[#1E293B]/70 border border-[#334155]/60 rounded-xl px-4 py-2 inline-flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[#3B82F6]"></span>
+                  <span className="text-sm font-bold text-[#F8FAFC]">{activeQuestion.section}</span>
+                </div>
+              )}
               {/* Question Card */}
               <QuestionCard
                 question={activeQuestion}
@@ -426,7 +457,7 @@ function ActiveTestContent() {
             <div className="flex items-center gap-3">
               <button
                 onClick={handleMarkAndNext}
-                className="px-5 py-3 border border-[#F59E0B] text-[#F59E0B] hover:bg-[#F59E0B]/10 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-colors cursor-pointer outline-none"
+                className="px-5 py-3 bg-[#F59E0B]/10 hover:bg-[#F59E0B]/20 active:scale-95 border border-[#F59E0B]/50 text-[#F59E0B] rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all cursor-pointer outline-none"
               >
                 MARK & NEXT
               </button>
@@ -440,7 +471,7 @@ function ActiveTestContent() {
             
             <button
               onClick={handleSaveAndNext}
-              className="px-6 py-3 bg-[#3B82F6] hover:bg-[#3B82F6]/90 text-white rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all shadow-md shadow-[#3B82F6]/10 cursor-pointer outline-none"
+              className="px-6 py-3 bg-[#3B82F6] hover:bg-[#2563EB] active:scale-95 text-white rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all shadow-md shadow-[#3B82F6]/20 hover:shadow-[#3B82F6]/40 cursor-pointer outline-none"
             >
               SAVE & NEXT
             </button>

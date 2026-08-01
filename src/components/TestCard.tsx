@@ -24,7 +24,7 @@ export default function TestCard({ test, status, attemptId }: TestCardProps) {
   }
 
   return (
-    <div className="p-6 bg-[#1E293B] border border-[#334155]/60 hover:border-[#3B82F6]/40 transition-all rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div className="p-6 bg-[#1E293B] border border-[#334155]/60 hover:border-[#3B82F6]/50 hover:shadow-[0_0_20px_rgba(59,130,246,0.15)] hover:scale-[1.01] transition-all duration-300 rounded-xl flex flex-col md:flex-row md:items-center justify-between gap-4 group">
       <div className="space-y-2">
         <h3 className="font-semibold text-lg text-[#F8FAFC] tracking-tight">{test.title}</h3>
         
@@ -52,7 +52,15 @@ export default function TestCard({ test, status, attemptId }: TestCardProps) {
         </div>
       </div>
 
-      <div className="flex items-center">
+      <div className="flex items-center gap-3">
+        {status === 'completed' && (
+          <Link
+            href={`/test/instructions?id=${test.id}`}
+            className="px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-center w-full md:w-auto shadow-sm cursor-pointer bg-[#3B82F6] hover:bg-[#3B82F6]/90 text-white"
+          >
+            Reattempt Test
+          </Link>
+        )}
         <Link 
           href={buttonLink} 
           className={`px-5 py-2.5 rounded-xl font-medium text-sm transition-all duration-200 text-center w-full md:w-auto shadow-sm cursor-pointer ${buttonClass}`}

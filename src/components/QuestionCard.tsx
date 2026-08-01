@@ -30,7 +30,7 @@ export default function QuestionCard({
       <div className="flex flex-wrap items-center justify-between gap-4 border-b border-[#334155]/60 pb-4">
         <div className="flex items-center gap-3">
           <span className="px-3 py-1 bg-[#3B82F6]/10 text-[#3B82F6] border border-[#3B82F6]/20 rounded-lg text-sm font-bold font-mono">
-            Q. {questionNumber}
+            Q. {question.questionNumber || questionNumber}
           </span>
           <div className="flex items-center gap-1.5 text-xs text-[#CBD5E1] bg-[#0F172A] px-2.5 py-1 rounded-md font-mono">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">

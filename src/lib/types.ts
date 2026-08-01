@@ -9,6 +9,8 @@ export interface Question {
   options: string[];      // 4 choices
   correctOptionIndex: number;
   explanation: string;
+  questionNumber?: number; // Original question number from DB
+  section?: string;        // E.g., 'Section A: English', 'Section B: GK'
 }
 
 export type TestCategory = 'pyp' | 'maths_pack' | 'full_mock';

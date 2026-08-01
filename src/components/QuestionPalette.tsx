@@ -27,7 +27,7 @@ export default function QuestionPalette({
   const attemptedCount = list.filter(r => r.selectedOptionIndex !== null && r.status !== 'marked').length;
   const unattemptedCount = list.filter(r => r.selectedOptionIndex === null && r.status === 'unattempted').length;
   const markedCount = list.filter(r => r.status === 'marked' || r.status === 'marked-attempted').length;
-  const unseenCount = list.filter(r => r.status === 'unseen').length;
+  const unseenCount = questions.length - list.length + list.filter(r => r.status === 'unseen').length;
 
   const getQuestionButtonStyles = (q: Question, idx: number) => {
     const resp = responses[q.id];
@@ -139,67 +139,93 @@ export default function QuestionPalette({
             <h4 className="text-xs font-bold text-[#CBD5E1]/80 uppercase tracking-wider mb-3">Questions</h4>
             
             {viewMode === 'grid' ? (
-              <div className="grid grid-cols-5 gap-3">
-                {questions.map((q, idx) => (
-                  <button
-                    key={q.id}
-                    onClick={() => {
-                      onSelectIndex(idx);
-                      // Close drawer on mobile
-                      if (window.innerWidth < 768) onClose();
-                    }}
-                    className={getQuestionButtonStyles(q, idx)}
-                  >
-                    <span>{idx + 1}</span>
-                    {/* Add mini star for marked items */}
-                    {(responses[q.id]?.status === 'marked' || responses[q.id]?.status === 'marked-attempted') && (
-                      <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-[#F59E0B] rounded-full border border-[#1E293B]" />
+              <div className="space-y-6">
+                {Object.entries(questions.reduce((acc, q, idx) => {
+                  const sec = q.section || 'Questions';
+                  if (!acc[sec]) acc[sec] = [];
+                  acc[sec].push({ q, idx });
+                  return acc;
+                }, {} as Record<string, { q: Question; idx: number }[]>)).map(([sectionName, sectionQuestions]) => (
+                  <div key={sectionName}>
+                    {sectionName !== 'Questions' && (
+                      <h5 className="text-[11px] font-bold text-[#3B82F6] mb-3 border-b border-[#3B82F6]/30 pb-1">{sectionName}</h5>
                     )}
-                  </button>
+                    <div className="grid grid-cols-5 gap-3">
+                      {sectionQuestions.map(({ q, idx }) => (
+                        <button
+                          key={q.id}
+                          onClick={() => {
+                            onSelectIndex(idx);
+                            // Close drawer on mobile
+                            if (window.innerWidth < 768) onClose();
+                          }}
+                          className={getQuestionButtonStyles(q, idx)}
+                        >
+                          <span>{idx + 1}</span>
+                          {/* Add mini star for marked items */}
+                          {(responses[q.id]?.status === 'marked' || responses[q.id]?.status === 'marked-attempted') && (
+                            <span className="absolute top-0 right-0 w-2.5 h-2.5 bg-[#F59E0B] rounded-full border border-[#1E293B]" />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 ))}
               </div>
             ) : (
-              <div className="space-y-2">
-                {questions.map((q, idx) => {
-                  const resp = responses[q.id];
-                  const isCurrent = idx === currentIndex;
-                  const isAnswered = resp?.selectedOptionIndex !== null;
-                  const isMarked = resp?.status === 'marked' || resp?.status === 'marked-attempted';
-                  
-                  let badgeText = "Unseen";
-                  let badgeClass = "bg-[#1E293B]/40 text-[#CBD5E1]/50";
-                  
-                  if (isMarked) {
-                    badgeText = isAnswered ? "Answered & Marked" : "Marked";
-                    badgeClass = "bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/20";
-                  } else if (isAnswered) {
-                    badgeText = "Answered";
-                    badgeClass = "bg-[#3B82F6]/10 text-[#3B82F6] border border-[#3B82F6]/20";
-                  } else if (resp?.status === 'unattempted') {
-                    badgeText = "Unattempted";
-                    badgeClass = "bg-[#334155]/50 text-[#CBD5E1]";
-                  }
+              <div className="space-y-6">
+                {Object.entries(questions.reduce((acc, q, idx) => {
+                  const sec = q.section || 'Questions';
+                  if (!acc[sec]) acc[sec] = [];
+                  acc[sec].push({ q, idx });
+                  return acc;
+                }, {} as Record<string, { q: Question; idx: number }[]>)).map(([sectionName, sectionQuestions]) => (
+                  <div key={sectionName} className="space-y-2">
+                    {sectionName !== 'Questions' && (
+                      <h5 className="text-[11px] font-bold text-[#3B82F6] mb-2 border-b border-[#3B82F6]/30 pb-1">{sectionName}</h5>
+                    )}
+                    {sectionQuestions.map(({ q, idx }) => {
+                      const resp = responses[q.id];
+                      const isCurrent = idx === currentIndex;
+                      const isAnswered = resp?.selectedOptionIndex !== null;
+                      const isMarked = resp?.status === 'marked' || resp?.status === 'marked-attempted';
+                      
+                      let badgeText = "Unseen";
+                      let badgeClass = "bg-[#1E293B]/40 text-[#CBD5E1]/50";
+                      
+                      if (isMarked) {
+                        badgeText = isAnswered ? "Answered & Marked" : "Marked";
+                        badgeClass = "bg-[#F59E0B]/10 text-[#F59E0B] border border-[#F59E0B]/20";
+                      } else if (isAnswered) {
+                        badgeText = "Answered";
+                        badgeClass = "bg-[#3B82F6]/10 text-[#3B82F6] border border-[#3B82F6]/20";
+                      } else if (resp?.status === 'unattempted') {
+                        badgeText = "Unattempted";
+                        badgeClass = "bg-[#334155]/50 text-[#CBD5E1]";
+                      }
 
-                  return (
-                    <button
-                      key={q.id}
-                      onClick={() => {
-                        onSelectIndex(idx);
-                        if (window.innerWidth < 768) onClose();
-                      }}
-                      className={`w-full p-2.5 rounded-lg border text-left flex items-center justify-between text-xs font-semibold cursor-pointer outline-none transition-colors ${
-                        isCurrent 
-                          ? 'border-[#3B82F6] bg-[#3B82F6]/5' 
-                          : 'border-[#334155]/40 hover:bg-[#1E293B]/50'
-                      }`}
-                    >
-                      <span className="text-[#F8FAFC]">Question {idx + 1}</span>
-                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${badgeClass}`}>
-                        {badgeText}
-                      </span>
-                    </button>
-                  );
-                })}
+                      return (
+                        <button
+                          key={q.id}
+                          onClick={() => {
+                            onSelectIndex(idx);
+                            if (window.innerWidth < 768) onClose();
+                          }}
+                          className={`w-full p-2.5 rounded-lg border text-left flex items-center justify-between text-xs font-semibold cursor-pointer outline-none transition-colors ${
+                            isCurrent 
+                              ? 'border-[#3B82F6] bg-[#3B82F6]/5' 
+                              : 'border-[#334155]/40 hover:bg-[#1E293B]/50'
+                          }`}
+                        >
+                          <span className="text-[#F8FAFC]">Question {idx + 1}</span>
+                          <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${badgeClass}`}>
+                            {badgeText}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
             )}
           </div>

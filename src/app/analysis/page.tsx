@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
+import React, { useState, Suspense, useTransition } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import useSWR from 'swr';
 import { Attempt, Test, Question, LeaderboardEntry } from '../../lib/types';
 import { getAttempt, getTestById, getQuestionsForTest, getLeaderboardForTest } from '../../lib/db';
 import LoadingSpinner from '../../components/LoadingSpinner';
+import SkeletonLoader from '../../components/SkeletonLoader';
 import EmptyState from '../../components/EmptyState';
 import StatsCard from '../../components/StatsCard';
 import SolutionCard from '../../components/SolutionCard';
@@ -14,42 +16,42 @@ function AnalysisContent() {
   const searchParams = useSearchParams();
   const attemptId = searchParams.get('attemptId') || '';
 
-  const [attempt, setAttempt] = useState<Attempt | null>(null);
-  const [test, setTest] = useState<Test | null>(null);
-  const [questions, setQuestions] = useState<Question[]>([]);
-  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
   const [activeTab, setActiveTab] = useState<'analysis' | 'solutions' | 'leaderboard'>('analysis');
   const [solutionFilter, setSolutionFilter] = useState<'all' | 'correct' | 'incorrect' | 'unattempted'>('all');
-  const [loading, setLoading] = useState(true);
+  const [isPending, startTransition] = useTransition();
 
-  useEffect(() => {
-    async function init() {
-      if (attemptId) {
-        const att = await getAttempt(attemptId);
-        if (att) {
-          setAttempt(att);
-          const t = getTestById(att.testId);
-          if (t) setTest(t);
-          const q = await getQuestionsForTest(att.testId);
-          setQuestions(q);
-          const board = await getLeaderboardForTest(att.testId);
-          setLeaderboard(board);
-        }
-      }
-      setLoading(false);
-    }
-    init();
-  }, [attemptId]);
+  const fetcher = async (id: string) => {
+    const attemptIdStr = id.replace('analysis-', '');
+    const att = await getAttempt(attemptIdStr);
+    if (!att) throw new Error("Attempt not found");
+    const t = getTestById(att.testId);
+    if (!t) throw new Error("Test not found");
+    const q = await getQuestionsForTest(att.testId);
+    const board = await getLeaderboardForTest(att.testId);
+    return { attempt: att, test: t, questions: q, leaderboard: board };
+  };
 
-  if (loading) {
+  const { data, error, isLoading } = useSWR(
+    attemptId ? `analysis-${attemptId}` : null,
+    fetcher,
+    { revalidateOnFocus: false }
+  );
+
+  const handleTabChange = (tab: 'analysis' | 'solutions' | 'leaderboard') => {
+    startTransition(() => {
+      setActiveTab(tab);
+    });
+  };
+
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#0F172A] flex items-center justify-center">
-        <LoadingSpinner />
+      <div className="min-h-screen bg-[#0F172A] p-8 max-w-5xl mx-auto space-y-6">
+        <SkeletonLoader count={4} />
       </div>
     );
   }
 
-  if (!attempt || !test || questions.length === 0) {
+  if (error || !data || !data.attempt || !data.test || data.questions.length === 0) {
     return (
       <div className="min-h-screen bg-[#0F172A] flex items-center justify-center p-4">
         <div className="max-w-md text-center">
@@ -61,6 +63,8 @@ function AnalysisContent() {
       </div>
     );
   }
+
+  const { attempt, test, questions, leaderboard } = data;
 
   // Format time taken
   const formatTimeTaken = (secs: number) => {
@@ -125,7 +129,7 @@ function AnalysisContent() {
             return (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
+                onClick={() => handleTabChange(tab)}
                 className={`py-3 px-6 text-sm font-semibold capitalize transition-all relative cursor-pointer outline-none ${
                   isActive ? 'text-[#3B82F6]' : 'text-[#CBD5E1] hover:text-[#F8FAFC]'
                 }`}
@@ -141,9 +145,15 @@ function AnalysisContent() {
 
         {/* Tab Contents */}
 
-        {/* 1. ANALYSIS TAB */}
-        {activeTab === 'analysis' && (
-          <div className="space-y-6 animate-fadeIn">
+        {isPending ? (
+          <div className="space-y-6 mt-6">
+            <SkeletonLoader count={3} />
+          </div>
+        ) : (
+          <>
+            {/* 1. ANALYSIS TAB */}
+            {activeTab === 'analysis' && (
+              <div className="space-y-6 animate-fadeIn">
             {/* Summary cards grid */}
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <StatsCard
@@ -367,6 +377,8 @@ function AnalysisContent() {
               Note: This is a static user interface template demonstrating the leaderboard structure. No real-time backend communication has been implemented.
             </p>
           </div>
+        )}
+          </>
         )}
 
       </main>

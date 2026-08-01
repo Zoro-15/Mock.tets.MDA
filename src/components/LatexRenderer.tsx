@@ -33,25 +33,29 @@ export default function LatexRenderer({ text }: LatexRendererProps) {
           .replace(/color:\s*#[a-f0-9]{3,8};?/gi, '')
           .replace(/color:\s*\w+;?/gi, '')
           .replace(/style="\s*"/gi, '')
-          .replace(/\\\\([()\[\]])/g, '\\$1');
+          .replace(/\\\\([()\[\]])/g, '\\$1')
+          .replace(/\\\\([a-zA-Z])/g, '\\$1');
 
         // 2. Decode HTML entities (like &amp; -> &, &alpha; -> α) while keeping HTML tags
         const decodedText = decodeHtmlEntities(cleanedText);
 
         // 3. Split text by block math ($$, \[) and inline math ($, \()
-        const parts = decodedText.split(/(\$\$[\s\S]+?\$\$|\$[\s\S]+?\$|\\\[[\s\S]+?\\\]|\\\([\s\S]+?\\\))/g);
+        const parts = decodedText.split(/(\$\$[\s\S]*?\$\$|\$[\s\S]*?\$|\\\[[\s\S]*?\\\]|\\\([\s\S]*?\\\))/g);
         
         const renderMath = (math: string, displayMode: boolean) => {
           try {
-            // Clean up any stray entities inside LaTeX matrices
             const cleanMath = math
               .replace(/&amp;/g, '&')
               .replace(/&lt;/g, '<')
               .replace(/&gt;/g, '>')
-              .replace(/&nbsp;/g, ' ');
+              .replace(/&nbsp;/g, ' ')
+              .replace(/&quot;/g, '"')
+              .replace(/\*\{[0-9]+\}\{([a-zA-Z])\}/g, '$1$1$1$1');
             return katex.default.renderToString(cleanMath, { 
               displayMode, 
-              throwOnError: false 
+              throwOnError: false,
+              strict: false,
+              trust: true
             });
           } catch (err) {
             return `<span class="text-[#EF4444]">${math}</span>`;
@@ -68,7 +72,15 @@ export default function LatexRenderer({ text }: LatexRendererProps) {
           } else if (part.startsWith('\\(') && part.endsWith('\\)')) {
             return renderMath(part.slice(2, -2), false);
           }
-          return part;
+          
+          // For plain text parts, gracefully handle unformatted math like x^{2} or x_1
+          let textPart = part;
+          textPart = textPart.replace(/\^\{([^}]+)\}/g, '<sup>$1</sup>');
+          textPart = textPart.replace(/_\{([^}]+)\}/g, '<sub>$1</sub>');
+          textPart = textPart.replace(/\^([a-zA-Z0-9\u0370-\u03FF])/g, '<sup>$1</sup>');
+          textPart = textPart.replace(/_([a-zA-Z0-9\u0370-\u03FF])/g, '<sub>$1</sub>');
+          
+          return textPart;
         }).join('');
 
         setHtml(parsed);

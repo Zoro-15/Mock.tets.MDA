@@ -23,13 +23,19 @@ export default function StatsCard({ title, value, subtitle, icon, accentColor = 
     iconBgClass = 'bg-[#EF4444]/10 text-[#EF4444]';
   }
 
+  let valueColorClass = 'text-[#F8FAFC]';
+  if (accentColor === 'success') valueColorClass = 'text-[#22C55E]';
+  else if (accentColor === 'warning') valueColorClass = 'text-[#F59E0B]';
+  else if (accentColor === 'danger') valueColorClass = 'text-[#EF4444]';
+  else if (accentColor === 'primary') valueColorClass = 'text-[#3B82F6]';
+
   return (
     <div className={`p-5 bg-[#1E293B] border border-[#334155]/60 rounded-xl transition-all duration-200 ${borderHoverClass} flex items-start justify-between gap-3`}>
       <div className="space-y-1.5">
         <span className="text-xs font-medium text-[#CBD5E1] uppercase tracking-wider block">
           {title}
         </span>
-        <div className="text-2xl font-bold text-[#F8FAFC]">
+        <div className={`text-3xl sm:text-4xl font-extrabold tracking-tight ${valueColorClass} drop-shadow-md`}>
           {value}
         </div>
         {subtitle && (

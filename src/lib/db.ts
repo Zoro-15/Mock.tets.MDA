@@ -235,25 +235,51 @@ export async function getQuestionsForTest(testId: string): Promise<Question[]> {
             query = query.ilike('source_file', `%${year}%`).ilike('source_file', isMath ? '%math%' : '%gat%');
           }
         } else if (test.category === 'full_mock') {
+          const match = test.title.match(/Test (\d+)/);
+          const num = match ? match[1] : '';
           const isMath = test.subCategory === 'math';
           query = query.ilike('source_file', `%mock%`).ilike('source_file', isMath ? '%math%' : '%gat%');
+          if (num) {
+            query = query.ilike('source_file', `%${num}%`);
+          }
         }
       }
 
-      const { data, error } = await query.order('question_number', { ascending: true });
+      const { data, error } = await query.order('question_number', { ascending: true, nullsFirst: false }).order('id', { ascending: true });
       if (error) throw error;
 
       if (data && data.length > 0) {
-        console.log(`[Supabase] Loaded ${data.length} questions for test: ${testId}`);
+        // Fuzzy search might match multiple files (e.g. both Paper I and II for 2024)
+        // We isolate the best matching source file to prevent 300-question combinations.
+        const uniqueSourceFiles = Array.from(new Set(data.map((r: any) => r.source_file)));
+        let selectedSourceFile = uniqueSourceFiles[0];
+
+        if (uniqueSourceFiles.length > 1 && test.category === 'pyp') {
+          const halfMatch = test.title.match(/NDA-(I|II)/);
+          const half = halfMatch ? halfMatch[1] : null;
+          if (half) {
+            const matchedFile = uniqueSourceFiles.find((sf: any) => 
+              typeof sf === 'string' && (sf.includes(`-${half}`) || sf.includes(`_${half}_`) || sf.includes(` ${half} `) || sf.includes(`${half}_`))
+            );
+            if (matchedFile) {
+              selectedSourceFile = matchedFile;
+            }
+          }
+        }
+
+        const isolatedData = data.filter((row: any) => row.source_file === selectedSourceFile);
+        console.log(`[Supabase] Loaded ${isolatedData.length} questions for test: ${testId} from ${selectedSourceFile}`);
+
         // Map database columns to Question interface
-        return data.map((row: any) => ({
+        return isolatedData.map((row: any) => ({
           id: row.id.toString(),
           type: row.question_text.includes('pmatrix') || row.question_text.includes('\\frac') ? 'latex' : 'text',
           questionText: row.question_text,
           comprehension: row.comprehension || undefined,
           options: [row.option_1, row.option_2, row.option_3, row.option_4],
           correctOptionIndex: row.correct_index,
-          explanation: row.solution
+          explanation: row.solution,
+          questionNumber: row.question_number
         }));
       }
     } catch (err) {
@@ -349,7 +375,7 @@ export async function submitAttemptToSupabase(
   let incorrectCount = 0;
   let unattemptedCount = 0;
 
-  const marksPerQuestion = test.subCategory === 'gat' ? 4.0 : 2.5;
+  const marksPerQuestion = test.marks / test.questionsCount;
 
   questions.forEach((q) => {
     const resp = responses[q.id];
