@@ -380,17 +380,10 @@ function ActiveTestContent() {
             {/* Timer component */}
             <Timer initialTimeLeft={initialTime} onTick={handleTick} isPaused={loading || !attempt || attempt.completed || submitDialogOpen} />
 
-            {/* Language Placeholder icon */}
-            <div className="w-8 h-8 rounded-lg bg-[#0F172A]/40 border border-[#334155]/60 flex items-center justify-center text-[#CBD5E1]" title="English Only">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4.5 h-4.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896 3.066 2.19 5.752 3.816 7.778" />
-              </svg>
-            </div>
-
             {/* Palette toggle button */}
             <button
               onClick={() => setPaletteOpen(!paletteOpen)}
-              className="p-2 bg-[#3B82F6] hover:bg-[#3B82F6]/90 text-white rounded-lg cursor-pointer md:hidden shadow-sm"
+              className="w-8 h-8 flex items-center justify-center bg-[#1E293B] border border-[#334155]/60 hover:bg-[#334155]/60 text-[#CBD5E1] hover:text-[#F8FAFC] rounded-lg cursor-pointer md:hidden transition-colors"
               title="Open palette"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
@@ -454,17 +447,17 @@ function ActiveTestContent() {
           <div className="flex-grow" />
 
           {/* Bottom Action Bar */}
-          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[#334155]/40 pt-4 bg-[#0F172A] sticky bottom-0 z-20">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 border-t border-[#334155]/40 pt-4 bg-[#0F172A] sticky bottom-0 z-20">
+            <div className="flex flex-row items-center gap-3 w-full sm:w-auto">
               <button
                 onClick={handleMarkAndNext}
-                className="px-5 py-3 bg-[#F59E0B]/10 hover:bg-[#F59E0B]/20 active:scale-95 border border-[#F59E0B]/50 text-[#F59E0B] rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all cursor-pointer outline-none"
+                className="flex-1 sm:flex-none px-3 sm:px-5 py-3 bg-[#F59E0B]/10 hover:bg-[#F59E0B]/20 active:scale-95 border border-[#F59E0B]/50 text-[#F59E0B] rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all cursor-pointer outline-none text-center"
               >
                 MARK & NEXT
               </button>
               <button
                 onClick={handleClearResponse}
-                className="px-5 py-3 border border-[#334155]/60 text-[#CBD5E1] hover:text-[#F8FAFC] hover:bg-[#1E293B]/40 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-colors cursor-pointer outline-none"
+                className="flex-1 sm:flex-none px-3 sm:px-5 py-3 border border-[#334155]/60 text-[#CBD5E1] hover:text-[#F8FAFC] hover:bg-[#1E293B]/40 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-colors cursor-pointer outline-none text-center"
               >
                 CLEAR RESPONSE
               </button>
@@ -472,7 +465,7 @@ function ActiveTestContent() {
             
             <button
               onClick={handleSaveAndNext}
-              className="px-6 py-3 bg-[#3B82F6] hover:bg-[#2563EB] active:scale-95 text-white rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all shadow-md shadow-[#3B82F6]/20 hover:shadow-[#3B82F6]/40 cursor-pointer outline-none"
+              className="w-full sm:w-auto px-6 py-3 bg-[#3B82F6] hover:bg-[#2563EB] active:scale-95 text-white rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all shadow-md shadow-[#3B82F6]/20 hover:shadow-[#3B82F6]/40 cursor-pointer outline-none text-center"
             >
               SAVE & NEXT
             </button>
