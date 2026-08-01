@@ -42,7 +42,7 @@ export default function ContinueLearningCard({ unfinishedAttempt, test }: Contin
               showQuote ? 'bg-[#3B82F6]' : 'bg-[#334155]'
             }`}
           >
-            <div className={`w-4 h-4 rounded-full bg-white transition-transform duration-200 ${
+            <div className={`w-4 h-4 rounded-full bg-[#1E293B] transition-transform duration-200 ${
               showQuote ? 'translate-x-4' : 'translate-x-0'
             }`} />
           </button>

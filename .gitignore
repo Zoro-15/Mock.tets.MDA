@@ -61,3 +61,8 @@ pnpm-workspace.yaml
 
 # package-lock.json
 package-lock.json
+
+# Scratch Scripts & Temp files
+*-migrate.js
+*-revert.js
+scratch/

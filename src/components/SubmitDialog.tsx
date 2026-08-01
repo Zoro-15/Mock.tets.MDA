@@ -6,6 +6,7 @@ interface SubmitDialogProps {
   attemptedCount: number;
   unattemptedCount: number;
   markedCount: number;
+  isSubmitting?: boolean;
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -16,6 +17,7 @@ export default function SubmitDialog({
   attemptedCount,
   unattemptedCount,
   markedCount,
+  isSubmitting = false,
   onConfirm,
   onCancel
 }: SubmitDialogProps) {
@@ -35,7 +37,7 @@ export default function SubmitDialog({
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       {/* Overlay Backdrop */}
       <div 
-        onClick={onCancel}
+        onClick={isSubmitting ? undefined : onCancel}
         className="absolute inset-0 bg-black/75 backdrop-blur-sm" 
       />
 
@@ -97,15 +99,27 @@ export default function SubmitDialog({
         <div className="grid grid-cols-2 gap-3">
           <button
             onClick={onCancel}
-            className="w-full py-2.5 bg-[#334155] hover:bg-[#334155]/80 text-[#CBD5E1] rounded-xl text-sm font-semibold transition-colors cursor-pointer outline-none"
+            disabled={isSubmitting}
+            className="w-full py-2.5 bg-[#334155] hover:bg-[#334155]/80 disabled:opacity-50 text-[#CBD5E1] rounded-xl text-sm font-semibold transition-colors cursor-pointer outline-none"
           >
             No, Resume
           </button>
           <button
             onClick={onConfirm}
-            className="w-full py-2.5 bg-[#3B82F6] hover:bg-[#3B82F6]/90 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer outline-none"
+            disabled={isSubmitting}
+            className="w-full py-2.5 bg-[#3B82F6] hover:bg-[#3B82F6]/90 disabled:opacity-80 text-white rounded-xl text-sm font-semibold transition-colors cursor-pointer outline-none flex items-center justify-center gap-2"
           >
-            Yes, Submit
+            {isSubmitting ? (
+              <>
+                <svg className="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Submitting...
+              </>
+            ) : (
+              "Yes, Submit"
+            )}
           </button>
         </div>
       </div>

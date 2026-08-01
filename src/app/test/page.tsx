@@ -30,6 +30,7 @@ function ActiveTestContent() {
   const [expired, setExpired] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Time spent per question tracker - stored in mutable ref to avoid continuous state re-triggering
@@ -97,7 +98,9 @@ function ActiveTestContent() {
 
   // Submit helper
   const handleFinalSubmit = useCallback(async () => {
-    if (!attemptId) return;
+    if (!attemptId || isSubmitting) return;
+    setIsSubmitting(true);
+    
     // Combine current timeSpentRef into responses
     const finalResponses = { ...responses };
     Object.keys(finalResponses).forEach(qId => {
@@ -107,20 +110,25 @@ function ActiveTestContent() {
       };
     });
 
-    await submitAttemptToSupabase(attemptId, finalResponses, timeLeftRef.current);
-    
-    // Preload analysis data instantly using SWR
-    preload(attemptId ? `analysis-${attemptId}` : null, async () => {
-      const att = await getAttempt(attemptId);
-      if (!att) throw new Error("Attempt not found");
-      const t = getTestById(att.testId);
-      const q = await getQuestionsForTest(att.testId);
-      const board = await getLeaderboardForTest(att.testId);
-      return { attempt: att, test: t, questions: q, leaderboard: board };
-    });
-    
-    router.push(`/analysis?attemptId=${attemptId}`);
-  }, [attemptId, responses, router]);
+    try {
+      await submitAttemptToSupabase(attemptId, finalResponses, timeLeftRef.current);
+      
+      // Preload analysis data instantly using SWR
+      preload(attemptId ? `analysis-${attemptId}` : null, async () => {
+        const att = await getAttempt(attemptId);
+        if (!att) throw new Error("Attempt not found");
+        const t = getTestById(att.testId);
+        const q = await getQuestionsForTest(att.testId);
+        const board = await getLeaderboardForTest(att.testId);
+        return { attempt: att, test: t, questions: q, leaderboard: board };
+      });
+      
+      router.push(`/analysis?attemptId=${attemptId}`);
+    } catch (e) {
+      console.error(e);
+      setIsSubmitting(false);
+    }
+  }, [attemptId, responses, router, isSubmitting]);
 
   // Expiry auto-submit
   useEffect(() => {
@@ -506,6 +514,7 @@ function ActiveTestContent() {
         attemptedCount={attemptedCount}
         unattemptedCount={unattemptedCount}
         markedCount={markedCount}
+        isSubmitting={isSubmitting}
         onConfirm={handleFinalSubmit}
         onCancel={() => setSubmitDialogOpen(false)}
       />
