@@ -2,35 +2,68 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Attempt, Test } from '../lib/types';
-import { getRecentAttempts, getTestById } from '../lib/db';
+import { Attempt, Test, User } from '../lib/types';
+import { getTestById, getCurrentUser, setCurrentUser, fetchRecentAttemptsFromSupabase } from '../lib/db';
 import ContinueLearningCard from '../components/ContinueLearningCard';
 import LoadingSpinner from '../components/LoadingSpinner';
+import RegistrationModal from '../components/RegistrationModal';
 
 export default function HomePage() {
+  const [currentUser, setUser] = useState<User | null>(null);
   const [unfinishedAttempt, setUnfinishedAttempt] = useState<Attempt | null>(null);
   const [associatedTest, setAssociatedTest] = useState<Test | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    // Read from localStorage on mount
-    const recent = getRecentAttempts();
-    const incomplete = recent.find(att => !att.completed);
-    
-    if (incomplete) {
-      setUnfinishedAttempt(incomplete);
-      const test = getTestById(incomplete.testId);
-      if (test) setAssociatedTest(test);
-    } else {
-      setUnfinishedAttempt(null);
-      setAssociatedTest(null);
+  const loadSessionAndAttempts = async (user: User) => {
+    setLoading(true);
+    try {
+      const recent = await fetchRecentAttemptsFromSupabase(user.id);
+      const incomplete = recent.find(att => !att.completed);
+      
+      if (incomplete) {
+        setUnfinishedAttempt(incomplete);
+        const test = getTestById(incomplete.testId);
+        if (test) setAssociatedTest(test);
+      } else {
+        setUnfinishedAttempt(null);
+        setAssociatedTest(null);
+      }
+    } catch (e) {
+      console.error('Error loading session attempts:', e);
     }
-    
     setLoading(false);
+  };
+
+  useEffect(() => {
+    const user = getCurrentUser();
+    setUser(user);
+    if (user) {
+      loadSessionAndAttempts(user);
+    } else {
+      setLoading(false);
+    }
   }, []);
+
+  const handleAuthSuccess = () => {
+    const user = getCurrentUser();
+    setUser(user);
+    if (user) {
+      loadSessionAndAttempts(user);
+    }
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setUser(null);
+    setUnfinishedAttempt(null);
+    setAssociatedTest(null);
+  };
 
   return (
     <div className="min-h-screen bg-[#0F172A] text-[#F8FAFC]">
+      {/* Registration / Login Modal Overlay */}
+      {!currentUser && <RegistrationModal onSuccess={handleAuthSuccess} />}
+
       {/* Header */}
       <header className="border-b border-[#334155]/60 bg-[#1E293B]/80 sticky top-0 z-30 backdrop-blur-md">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
@@ -52,13 +85,26 @@ export default function HomePage() {
             <Link href="/full-mocks" className="hover:text-[#F8FAFC] transition-colors">Full Mocks</Link>
           </nav>
 
-          {/* Profile Placeholder */}
-          <div className="flex items-center gap-3 bg-[#0F172A]/40 pl-3 pr-1 py-1 rounded-full border border-[#334155]/60">
-            <span className="text-xs font-semibold text-[#CBD5E1] hidden xs:inline">Aspirant</span>
-            <div className="w-8 h-8 rounded-full bg-[#3B82F6]/20 border border-[#3B82F6]/50 flex items-center justify-center font-bold text-sm text-[#3B82F6]">
-              A
+          {/* Profile & Logout Panel */}
+          {currentUser && (
+            <div className="flex items-center gap-3">
+              <div className="flex items-center gap-2 bg-[#0F172A]/40 pl-3 pr-2 py-1 rounded-full border border-[#334155]/60 text-xs font-semibold">
+                <div className="text-[#CBD5E1] hidden xs:block">
+                  <span className="text-[#F8FAFC] font-bold">{currentUser.name}</span>
+                  <span className="text-[10px] text-[#CBD5E1]/60 ml-1.5 font-mono">{currentUser.cadetNumber}</span>
+                </div>
+                <div className="w-7 h-7 rounded-full bg-[#3B82F6]/20 border border-[#3B82F6]/50 flex items-center justify-center font-bold text-[#3B82F6]">
+                  {currentUser.name[0].toUpperCase()}
+                </div>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="text-xs text-[#EF4444] hover:text-[#EF4444]/80 hover:bg-[#EF4444]/10 border border-transparent hover:border-[#EF4444]/30 px-3 py-1.5 rounded-full transition-all cursor-pointer font-bold outline-none"
+              >
+                Sign Out
+              </button>
             </div>
-          </div>
+          )}
         </div>
       </header>
 
@@ -68,7 +114,7 @@ export default function HomePage() {
         {/* Welcome Section */}
         <section className="space-y-1">
           <h1 className="text-2xl sm:text-3xl font-extrabold text-[#F8FAFC] tracking-tight">
-            Welcome back, Aspirant!
+            Welcome back, {currentUser ? currentUser.name : 'Aspirant'}!
           </h1>
           <p className="text-sm sm:text-base text-[#CBD5E1] max-w-xl leading-relaxed">
             Gear up for the National Defence Academy. Consistency is key to clearing the cutoff.
@@ -76,13 +122,15 @@ export default function HomePage() {
         </section>
 
         {/* Continue Learning card */}
-        <section className="bg-[#1E293B]/40 p-4 sm:p-6 border border-[#334155]/40 rounded-2xl">
-          {loading ? (
-            <LoadingSpinner />
-          ) : (
-            <ContinueLearningCard unfinishedAttempt={unfinishedAttempt} test={associatedTest} />
-          )}
-        </section>
+        {currentUser && (
+          <section className="bg-[#1E293B]/40 p-4 sm:p-6 border border-[#334155]/40 rounded-2xl">
+            {loading ? (
+              <LoadingSpinner />
+            ) : (
+              <ContinueLearningCard unfinishedAttempt={unfinishedAttempt} test={associatedTest} />
+            )}
+          </section>
+        )}
 
         {/* Main Categories Section */}
         <section className="space-y-4">

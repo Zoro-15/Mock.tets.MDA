@@ -58,3 +58,10 @@ export interface LeaderboardEntry {
   timeTaken: string;
   isCurrentUser?: boolean;
 }
+
+export interface User {
+  id: string;
+  name: string;
+  cadetNumber: string;
+  studentCode: string;
+}

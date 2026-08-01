@@ -4,7 +4,7 @@ import React, { useState, useEffect, useCallback, useRef, Suspense } from 'react
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { Attempt, Test, Question, QuestionResponse } from '../../lib/types';
-import { getAttempt, getTestById, getQuestions, updateAttemptProgress, submitAttempt } from '../../lib/db';
+import { getAttempt, getTestById, getQuestionsForTest, syncAttemptProgress, submitAttemptToSupabase } from '../../lib/db';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import Timer from '../../components/Timer';
@@ -33,27 +33,49 @@ function ActiveTestContent() {
 
   // Fetch initial details
   useEffect(() => {
-    if (attemptId) {
-      const att = getAttempt(attemptId);
-      if (att) {
-        setAttempt(att);
-        const t = getTestById(att.testId);
-        if (t) setTest(t);
-        const q = getQuestions(att.testId);
-        setQuestions(q);
-        setCurrentIndex(att.currentQuestionIndex);
-        setResponses(att.responses);
-        setTimeLeft(att.timeLeft);
-        
-        // Initialize timeSpentRef from loaded responses
-        const initialTimeSpent: Record<string, number> = {};
-        Object.values(att.responses).forEach(resp => {
-          initialTimeSpent[resp.questionId] = resp.timeSpent;
-        });
-        timeSpentRef.current = initialTimeSpent;
+    async function init() {
+      if (attemptId) {
+        const att = getAttempt(attemptId);
+        if (att) {
+          setAttempt(att);
+          const t = getTestById(att.testId);
+          if (t) setTest(t);
+          const q = await getQuestionsForTest(att.testId);
+          setQuestions(q);
+          
+          // Populate dynamic responses
+          const activeResponses = { ...att.responses };
+          let updated = false;
+          q.forEach(question => {
+            if (!activeResponses[question.id]) {
+              activeResponses[question.id] = {
+                questionId: question.id,
+                selectedOptionIndex: null,
+                timeSpent: 0,
+                status: 'unseen'
+              };
+              updated = true;
+            }
+          });
+          if (updated && q.length > 0 && activeResponses[q[0].id].status === 'unseen') {
+            activeResponses[q[0].id].status = 'unattempted';
+          }
+
+          setCurrentIndex(att.currentQuestionIndex);
+          setResponses(activeResponses);
+          setTimeLeft(att.timeLeft);
+          
+          // Initialize timeSpentRef from loaded responses
+          const initialTimeSpent: Record<string, number> = {};
+          Object.values(activeResponses).forEach(resp => {
+            initialTimeSpent[resp.questionId] = resp.timeSpent;
+          });
+          timeSpentRef.current = initialTimeSpent;
+        }
       }
+      setLoading(false);
     }
-    setLoading(false);
+    init();
   }, [attemptId]);
 
   const activeQuestion = questions[currentIndex];
@@ -65,11 +87,11 @@ function ActiveTestContent() {
     updatedIdx: number
   ) => {
     if (!attemptId) return;
-    updateAttemptProgress(attemptId, updatedResponses, updatedTimeLeft, updatedIdx);
+    syncAttemptProgress(attemptId, updatedResponses, updatedTimeLeft, updatedIdx);
   }, [attemptId]);
 
   // Submit helper
-  const handleFinalSubmit = useCallback(() => {
+  const handleFinalSubmit = useCallback(async () => {
     if (!attemptId) return;
     // Combine current timeSpentRef into responses
     const finalResponses = { ...responses };
@@ -80,7 +102,7 @@ function ActiveTestContent() {
       };
     });
 
-    submitAttempt(attemptId, finalResponses, timeLeft);
+    await submitAttemptToSupabase(attemptId, finalResponses, timeLeft);
     router.push(`/analysis?attemptId=${attemptId}`);
   }, [attemptId, responses, timeLeft, router]);
 

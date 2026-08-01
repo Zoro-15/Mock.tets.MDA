@@ -4,7 +4,7 @@ import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { Attempt, Test, Question, LeaderboardEntry } from '../../lib/types';
-import { getAttempt, getTestById, getQuestions, getLeaderboard } from '../../lib/db';
+import { getAttempt, getTestById, getQuestionsForTest, getLeaderboardForTest } from '../../lib/db';
 import LoadingSpinner from '../../components/LoadingSpinner';
 import EmptyState from '../../components/EmptyState';
 import StatsCard from '../../components/StatsCard';
@@ -23,19 +23,22 @@ function AnalysisContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (attemptId) {
-      const att = getAttempt(attemptId);
-      if (att) {
-        setAttempt(att);
-        const t = getTestById(att.testId);
-        if (t) setTest(t);
-        const q = getQuestions(att.testId);
-        setQuestions(q);
-        const board = getLeaderboard(att.testId);
-        setLeaderboard(board);
+    async function init() {
+      if (attemptId) {
+        const att = getAttempt(attemptId);
+        if (att) {
+          setAttempt(att);
+          const t = getTestById(att.testId);
+          if (t) setTest(t);
+          const q = await getQuestionsForTest(att.testId);
+          setQuestions(q);
+          const board = await getLeaderboardForTest(att.testId);
+          setLeaderboard(board);
+        }
       }
+      setLoading(false);
     }
-    setLoading(false);
+    init();
   }, [attemptId]);
 
   if (loading) {

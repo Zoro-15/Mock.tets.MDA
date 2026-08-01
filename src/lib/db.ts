@@ -1,26 +1,13 @@
-import { Test, Attempt, Question, QuestionResponse, LeaderboardEntry } from './types';
+import { Test, Attempt, Question, QuestionResponse, LeaderboardEntry, User } from './types';
 import { allTests, generateQuestionsForTest } from './mockData';
+import { supabase, isSupabaseConfigured } from './supabaseClient';
 
-// Quotes bank
-const MOTIVATIONAL_QUOTES = [
-  "Discipline is choosing between what you want now and what you want most.",
-  "Every question solved today brings you one step closer to the Academy.",
-  "The National Defence Academy is not just a campus; it is a cradle of leadership.",
-  "Service Before Self - Let this motto guide your preparation every single day.",
-  "Sweat more in peace, bleed less in war.",
-  "Your efforts today will define the prefix 'Lieutenant' or 'Flying Officer' tomorrow.",
-  "Courage is not the absence of fear, but the triumph over it.",
-  "The Academy doors open only to those who refuse to give up."
-];
+const USER_SESSION_KEY = 'nda_mock_user_session';
+const ATTEMPTS_KEY = 'nda_mock_attempts';
 
-export function getMotivationalQuote(): string {
-  // Return random quote
-  if (typeof window === 'undefined') return MOTIVATIONAL_QUOTES[0];
-  const idx = Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length);
-  return MOTIVATIONAL_QUOTES[idx];
-}
-
-// Emulate DB calls
+// ========================================================
+// 0. TEST CONFIGURATIONS AND LOOKUP
+// ========================================================
 export function getTests(): Test[] {
   return allTests;
 }
@@ -29,86 +16,282 @@ export function getTestById(id: string): Test | undefined {
   return allTests.find(t => t.id === id);
 }
 
-export function getQuestions(testId: string): Question[] {
+// ========================================================
+// 1. USER SESSION MANAGEMENT (AUTH)
+// ========================================================
+
+export function getCurrentUser(): User | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = localStorage.getItem(USER_SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (e) {
+    console.error('Error reading user session:', e);
+    return null;
+  }
+}
+
+export function setCurrentUser(user: User | null) {
+  if (typeof window === 'undefined') return;
+  try {
+    if (user) {
+      localStorage.setItem(USER_SESSION_KEY, JSON.stringify(user));
+    } else {
+      localStorage.removeItem(USER_SESSION_KEY);
+    }
+  } catch (e) {
+    console.error('Error writing user session:', e);
+  }
+}
+
+export async function loginUser(studentCode: string): Promise<{ success: boolean; user?: User; error?: string }> {
+  const deviceToken = getOrGenerateDeviceToken();
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('student_code', studentCode)
+        .single();
+
+      if (error) {
+        if (error.code === 'PGRST116') {
+          return { success: false, error: 'PIN not found. Please register first.' };
+        }
+        throw error;
+      }
+
+      if (data) {
+        // Update last login
+        await supabase
+          .from('users')
+          .update({
+            last_login: new Date().toISOString(),
+            device_token: deviceToken
+          })
+          .eq('id', data.id);
+
+        const user: User = {
+          id: data.id,
+          name: data.name,
+          cadetNumber: data.cadet_number,
+          studentCode: data.student_code
+        };
+
+        setCurrentUser(user);
+        return { success: true, user };
+      }
+    } catch (err: any) {
+      console.warn('Supabase login failed, entering offline fallback:', err);
+      return { success: false, error: 'Database connection error. Try again.' };
+    }
+  }
+
+  // Local storage offline fallback check
+  const fallbackUsers = getFallbackUsers();
+  const localUser = fallbackUsers.find(u => u.studentCode === studentCode);
+  if (localUser) {
+    setCurrentUser(localUser);
+    return { success: true, user: localUser };
+  }
+
+  return { success: false, error: 'Offline PIN not found. Please register.' };
+}
+
+export async function registerUser(name: string, cadetNumber: string, studentCode: string): Promise<{ success: boolean; user?: User; error?: string }> {
+  const deviceToken = getOrGenerateDeviceToken();
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      // Check if cadet number or code already exists in Supabase
+      const { data: existingUser } = await supabase
+        .from('users')
+        .select('id')
+        .or(`cadet_number.eq.${cadetNumber},student_code.eq.${studentCode}`)
+        .limit(1);
+
+      if (existingUser && existingUser.length > 0) {
+        return { success: false, error: 'Cadet Number or PIN already registered.' };
+      }
+
+      const { data, error } = await supabase
+        .from('users')
+        .insert([{
+          name,
+          cadet_number: cadetNumber,
+          student_code: studentCode,
+          device_token: deviceToken,
+          last_login: new Date().toISOString()
+        }])
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      if (data) {
+        const user: User = {
+          id: data.id,
+          name: data.name,
+          cadetNumber: data.cadet_number,
+          studentCode: data.student_code
+        };
+
+        setCurrentUser(user);
+        return { success: true, user };
+      }
+    } catch (err: any) {
+      console.error('Supabase registration failed:', err);
+      return { success: false, error: err.message || 'Registration failed.' };
+    }
+  }
+
+  // Local storage offline fallback registration
+  const fallbackUsers = getFallbackUsers();
+  const exists = fallbackUsers.some(u => u.cadetNumber === cadetNumber || u.studentCode === studentCode);
+  if (exists) {
+    return { success: false, error: 'Cadet Number or PIN already registered locally.' };
+  }
+
+  const localUser: User = {
+    id: `local-user-${Date.now()}`,
+    name,
+    cadetNumber,
+    studentCode
+  };
+
+  fallbackUsers.push(localUser);
+  saveFallbackUsers(fallbackUsers);
+  setCurrentUser(localUser);
+
+  return { success: true, user: localUser };
+}
+
+function getFallbackUsers(): User[] {
+  if (typeof window === 'undefined') return [];
+  try {
+    const raw = localStorage.getItem('nda_mock_fallback_users');
+    return raw ? JSON.parse(raw) : [];
+  } catch (e) {
+    return [];
+  }
+}
+
+function saveFallbackUsers(users: User[]) {
+  if (typeof window === 'undefined') return;
+  try {
+    localStorage.setItem('nda_mock_fallback_users', JSON.stringify(users));
+  } catch (e) {}
+}
+
+function getOrGenerateDeviceToken(): string {
+  if (typeof window === 'undefined') return '';
+  let token = localStorage.getItem('nda_mock_device_token');
+  if (!token) {
+    token = 'dev_' + Math.random().toString(36).substring(2, 11) + '_' + Date.now().toString(36);
+    localStorage.setItem('nda_mock_device_token', token);
+  }
+  return token;
+}
+
+// ========================================================
+// 2. DYNAMIC QUESTION FETCHING
+// ========================================================
+
+export async function getQuestionsForTest(testId: string): Promise<Question[]> {
+  const test = getTestById(testId);
+  if (!test) return [];
+
+  if (isSupabaseConfigured && supabase) {
+    try {
+      let query = supabase.from('questions').select('*');
+      
+      // Match by source_file name using fuzzy matching on the chapter
+      if (test.category === 'maths_pack') {
+        if (test.subCategory === 'chapter') {
+          const match = test.title.match(/CT \d+: (.+)/);
+          const chName = match ? match[1] : '';
+          const idxMatch = test.title.match(/CT (\d+)/);
+          const idx = idxMatch ? idxMatch[1] : '';
+          
+          if (idx) {
+            // Match 'CT 10_Binomial Theorem' or similar
+            query = query.or(`source_file.ilike.%CT ${idx}_%,source_file.ilike.%CT ${idx}.%,source_file.ilike.%CT_${idx}%`);
+          } else if (chName) {
+            query = query.ilike('source_file', `%${chName}%`);
+          }
+        } else if (test.subCategory === 'subject') {
+          const match = test.title.match(/ST \d+: (.+)/);
+          const subjName = match ? match[1] : '';
+          if (subjName) {
+            query = query.ilike('source_file', `%${subjName}%`);
+          }
+        }
+      } else if (test.category === 'pyp') {
+        // e.g. NDA-II 2025 Mathematics -> match 2025 and Math/GAT
+        const match = test.title.match(/(20\d{2})/);
+        const year = match ? match[1] : '';
+        const isMath = test.subCategory === 'math';
+        if (year) {
+          query = query.ilike('source_file', `%${year}%`).ilike('source_file', isMath ? '%math%' : '%gat%');
+        }
+      } else if (test.category === 'full_mock') {
+        const isMath = test.subCategory === 'math';
+        query = query.ilike('source_file', `%mock%`).ilike('source_file', isMath ? '%math%' : '%gat%');
+      }
+
+      const { data, error } = await query.order('question_number', { ascending: true });
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        // Map database columns to Question interface
+        return data.map((row: any) => ({
+          id: row.id.toString(),
+          type: row.comprehension ? 'assertion-reason' : (row.question_text.includes('pmatrix') || row.question_text.includes('\\frac') ? 'latex' : 'text'),
+          questionText: row.question_text,
+          comprehension: row.comprehension || undefined,
+          options: [row.option_1, row.option_2, row.option_3, row.option_4],
+          correctOptionIndex: row.correct_index,
+          explanation: row.solution
+        }));
+      }
+    } catch (err) {
+      console.warn(`Supabase question fetch failed for ${testId}, using local fallback:`, err);
+    }
+  }
+
+  // Fallback to local generated data
   return generateQuestionsForTest(testId);
 }
 
-// Manage attempts via localStorage
-const ATTEMPTS_KEY = 'nda_mock_attempts';
+// ========================================================
+// 3. ATTEMPTS SYNCING
+// ========================================================
 
-function getAllAttempts(): Record<string, Attempt> {
+function getLocalAttempts(): Record<string, Attempt> {
   if (typeof window === 'undefined') return {};
   try {
     const raw = localStorage.getItem(ATTEMPTS_KEY);
     return raw ? JSON.parse(raw) : {};
   } catch (e) {
-    console.error('Error reading attempts from localStorage', e);
     return {};
   }
 }
 
-function saveAttempts(attempts: Record<string, Attempt>) {
+function saveLocalAttempts(attempts: Record<string, Attempt>) {
   if (typeof window === 'undefined') return;
   try {
     localStorage.setItem(ATTEMPTS_KEY, JSON.stringify(attempts));
-  } catch (e) {
-    console.error('Error writing attempts to localStorage', e);
-  }
+  } catch (e) {}
 }
 
-export function createAttempt(testId: string): Attempt | null {
-  const test = getTestById(testId);
-  if (!test) return null;
-
-  const questions = getQuestions(testId);
-  const responses: Record<string, QuestionResponse> = {};
-
-  questions.forEach((q) => {
-    responses[q.id] = {
-      questionId: q.id,
-      selectedOptionIndex: null,
-      timeSpent: 0,
-      status: 'unseen'
-    };
-  });
-
-  // Set the first question as visited/unattempted
-  if (questions.length > 0) {
-    responses[questions[0].id].status = 'unattempted';
-  }
-
-  const attemptId = `attempt-${Date.now()}`;
-  const attempt: Attempt = {
-    id: attemptId,
-    testId,
-    responses,
-    timeLeft: test.duration * 60,
-    currentQuestionIndex: 0,
-    completed: false,
-    score: 0,
-    accuracy: 0,
-    percentile: 0,
-    correctCount: 0,
-    incorrectCount: 0,
-    unattemptedCount: questions.length,
-    timeTaken: 0,
-    startedAt: new Date().toISOString()
-  };
-
-  const attempts = getAllAttempts();
-  attempts[attemptId] = attempt;
-  saveAttempts(attempts);
-
-  return attempt;
-}
-
-export function updateAttemptProgress(
+export async function syncAttemptProgress(
   attemptId: string,
   responses: Record<string, QuestionResponse>,
   timeLeft: number,
   currentQuestionIndex: number
-): Attempt | null {
-  const attempts = getAllAttempts();
+): Promise<Attempt | null> {
+  const attempts = getLocalAttempts();
   const attempt = attempts[attemptId];
   if (!attempt) return null;
 
@@ -117,43 +300,53 @@ export function updateAttemptProgress(
   attempt.currentQuestionIndex = currentQuestionIndex;
 
   attempts[attemptId] = attempt;
-  saveAttempts(attempts);
+  saveLocalAttempts(attempts);
+
+  // Sync to Supabase
+  const currentUser = getCurrentUser();
+  if (isSupabaseConfigured && supabase && currentUser) {
+    try {
+      await supabase
+        .from('test_attempts')
+        .upsert({
+          id: attemptId,
+          user_id: currentUser.id,
+          test_id: attempt.testId,
+          score: attempt.score,
+          correct_count: attempt.correctCount,
+          incorrect_count: attempt.incorrectCount,
+          unattempted_count: attempt.unattemptedCount,
+          accuracy: attempt.accuracy,
+          time_taken: attempt.timeTaken,
+          responses: responses,
+          completed_at: null
+        });
+    } catch (err) {
+      console.warn('Supabase attempt sync failed:', err);
+    }
+  }
+
   return attempt;
 }
 
-export function getAttempt(attemptId: string): Attempt | null {
-  const attempts = getAllAttempts();
-  return attempts[attemptId] || null;
-}
-
-export function getRecentAttempts(): Attempt[] {
-  const attempts = getAllAttempts();
-  return Object.values(attempts)
-    .sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
-}
-
-export function submitAttempt(
+export async function submitAttemptToSupabase(
   attemptId: string,
   responses: Record<string, QuestionResponse>,
   timeLeft: number
-): Attempt | null {
-  const attempts = getAllAttempts();
+): Promise<Attempt | null> {
+  const attempts = getLocalAttempts();
   const attempt = attempts[attemptId];
   if (!attempt) return null;
 
   const test = getTestById(attempt.testId);
   if (!test) return null;
 
-  const questions = getQuestions(attempt.testId);
+  const questions = await getQuestionsForTest(attempt.testId);
   
   let correctCount = 0;
   let incorrectCount = 0;
   let unattemptedCount = 0;
-  let timeTakenSum = 0;
 
-  // Let's compute marks per question
-  // Math: 120 Qs, 300 Marks => 2.5 marks/Q. (or 10 Qs, 25 Marks => 2.5)
-  // GAT: 150 Qs, 600 Marks => 4.0 marks/Q.
   const marksPerQuestion = test.subCategory === 'gat' ? 4.0 : 2.5;
 
   questions.forEach((q) => {
@@ -162,8 +355,6 @@ export function submitAttempt(
       unattemptedCount++;
       return;
     }
-
-    timeTakenSum += resp.timeSpent;
 
     if (resp.selectedOptionIndex === null) {
       unattemptedCount++;
@@ -174,9 +365,7 @@ export function submitAttempt(
     }
   });
 
-  // Calculate score with negative markings
   const scoreRaw = (correctCount * marksPerQuestion) - (incorrectCount * test.negativeMarking);
-  // Round to 2 decimal places
   const score = Math.round(scoreRaw * 100) / 100;
 
   const totalAttempted = correctCount + incorrectCount;
@@ -184,8 +373,8 @@ export function submitAttempt(
     ? Math.round((correctCount / totalAttempted) * 100 * 100) / 100 
     : 0;
 
-  // Calculate simulated percentile
-  let percentile = 0;
+  // Relative percentile
+  let percentile = 75;
   if (totalAttempted > 0) {
     const ratio = score / test.marks;
     percentile = 70 + ratio * 28 + (Math.random() * 2 - 1);
@@ -201,20 +390,151 @@ export function submitAttempt(
   attempt.correctCount = correctCount;
   attempt.incorrectCount = incorrectCount;
   attempt.unattemptedCount = unattemptedCount;
-  attempt.timeTaken = test.duration * 60 - timeLeft; // Total time spent in seconds
+  attempt.timeTaken = test.duration * 60 - timeLeft;
   attempt.completedAt = new Date().toISOString();
 
   attempts[attemptId] = attempt;
-  saveAttempts(attempts);
+  saveLocalAttempts(attempts);
+
+  // Send completed attempt to Supabase
+  const currentUser = getCurrentUser();
+  if (isSupabaseConfigured && supabase && currentUser) {
+    try {
+      await supabase
+        .from('test_attempts')
+        .upsert({
+          id: attemptId,
+          user_id: currentUser.id,
+          test_id: attempt.testId,
+          score: score,
+          correct_count: correctCount,
+          incorrect_count: incorrectCount,
+          unattempted_count: unattemptedCount,
+          accuracy: accuracy,
+          time_taken: attempt.timeTaken,
+          responses: responses,
+          completed_at: new Date().toISOString()
+        });
+    } catch (err) {
+      console.error('Failed to submit attempt to Supabase:', err);
+    }
+  }
 
   return attempt;
 }
 
-export function getLeaderboard(testId: string): LeaderboardEntry[] {
-  // Generate random leaderboard entries based on test
+export function createAttempt(testId: string): Attempt | null {
+  const test = getTestById(testId);
+  if (!test) return null;
+
+  // Note: questions will load dynamically in the active test, so we prepare layout empty responses
+  const attemptId = `attempt-${Date.now()}`;
+  const attempt: Attempt = {
+    id: attemptId,
+    testId,
+    responses: {},
+    timeLeft: test.duration * 60,
+    currentQuestionIndex: 0,
+    completed: false,
+    score: 0,
+    accuracy: 0,
+    percentile: 0,
+    correctCount: 0,
+    incorrectCount: 0,
+    unattemptedCount: test.questionsCount,
+    timeTaken: 0,
+    startedAt: new Date().toISOString()
+  };
+
+  const attempts = getLocalAttempts();
+  attempts[attemptId] = attempt;
+  saveLocalAttempts(attempts);
+
+  return attempt;
+}
+
+export function getAttempt(attemptId: string): Attempt | null {
+  const attempts = getLocalAttempts();
+  return attempts[attemptId] || null;
+}
+
+export function getRecentAttempts(): Attempt[] {
+  const attempts = getLocalAttempts();
+  return Object.values(attempts)
+    .sort((a, b) => new Date(b.startedAt).getTime() - new Date(a.startedAt).getTime());
+}
+
+export async function fetchRecentAttemptsFromSupabase(userId: string): Promise<Attempt[]> {
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('test_attempts')
+        .select('*')
+        .eq('user_id', userId)
+        .order('completed_at', { ascending: false });
+
+      if (error) throw error;
+      if (data) {
+        return data.map((row: any) => ({
+          id: row.id,
+          testId: row.test_id,
+          responses: row.responses,
+          timeLeft: 0, // not needed for reports
+          currentQuestionIndex: 0,
+          completed: row.completed_at !== null,
+          score: Number(row.score),
+          accuracy: Number(row.accuracy),
+          percentile: 85, // default simulation relative percentile
+          correctCount: row.correct_count,
+          incorrectCount: row.incorrect_count,
+          unattempted_count: row.unattempted_count,
+          timeTaken: row.time_taken,
+          startedAt: row.completed_at || new Date().toISOString()
+        } as unknown as Attempt));
+      }
+    } catch (err) {
+      console.warn('Failed to load attempts from Supabase, using local:', err);
+    }
+  }
+  return getRecentAttempts();
+}
+
+// ========================================================
+// 4. LEADERBOARD RANKINGS
+// ========================================================
+
+export async function getLeaderboardForTest(testId: string): Promise<LeaderboardEntry[]> {
+  if (isSupabaseConfigured && supabase) {
+    try {
+      // Query the dynamic SQL view we created
+      const { data, error } = await supabase
+        .from('leaderboard')
+        .select('*')
+        .eq('test_id', testId)
+        .order('rank', { ascending: true })
+        .limit(10);
+
+      if (error) throw error;
+
+      if (data && data.length > 0) {
+        const currentUser = getCurrentUser();
+        return data.map((row: any) => ({
+          rank: row.rank,
+          name: row.name,
+          score: Number(row.score),
+          accuracy: Number(row.accuracy),
+          timeTaken: formatDuration(row.time_taken),
+          isCurrentUser: currentUser ? row.cadet_number === currentUser.cadetNumber : false
+        }));
+      }
+    } catch (err) {
+      console.warn('Failed to fetch Supabase leaderboard, using fallback:', err);
+    }
+  }
+
+  // Fallback to static leaderboard
   const test = getTestById(testId);
   const max = test ? test.marks : 300;
-
   return [
     { rank: 1, name: "Aditya Singh", score: Math.round(max * 0.92 * 100) / 100, accuracy: 95, timeTaken: "1h 45m" },
     { rank: 2, name: "Vikram Rathore", score: Math.round(max * 0.88 * 100) / 100, accuracy: 92, timeTaken: "1h 50m" },
@@ -222,4 +542,32 @@ export function getLeaderboard(testId: string): LeaderboardEntry[] {
     { rank: 4, name: "Rahul Verma", score: Math.round(max * 0.81 * 100) / 100, accuracy: 86, timeTaken: "1h 48m" },
     { rank: 5, name: "Karan Johar", score: Math.round(max * 0.78 * 100) / 100, accuracy: 84, timeTaken: "2h 02m" }
   ];
+}
+
+function formatDuration(totalSeconds: number): string {
+  const hrs = Math.floor(totalSeconds / 3600);
+  const mins = Math.floor((totalSeconds % 3600) / 60);
+  if (hrs > 0) return `${hrs}h ${mins}m`;
+  return `${mins}m`;
+}
+
+// ========================================================
+// 5. MOTIVATIONAL QUOTES
+// ========================================================
+
+const MOTIVATIONAL_QUOTES = [
+  "Discipline is choosing between what you want now and what you want most.",
+  "Every question solved today brings you one step closer to the Academy.",
+  "The National Defence Academy is not just a campus; it is a cradle of leadership.",
+  "Service Before Self - Let this motto guide your preparation every single day.",
+  "Sweat more in peace, bleed less in war.",
+  "Your efforts today will define the prefix 'Lieutenant' or 'Flying Officer' tomorrow.",
+  "Courage is not the absence of fear, but the triumph over it.",
+  "The Academy doors open only to those who refuse to give up."
+];
+
+export function getMotivationalQuote(): string {
+  if (typeof window === 'undefined') return MOTIVATIONAL_QUOTES[0];
+  const idx = Math.floor(Math.random() * MOTIVATIONAL_QUOTES.length);
+  return MOTIVATIONAL_QUOTES[idx];
 }
