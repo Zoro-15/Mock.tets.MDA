@@ -7,6 +7,7 @@ import { Test } from '../../../lib/types';
 import { getTestById, createAttempt } from '../../../lib/db';
 import LoadingSpinner from '../../../components/LoadingSpinner';
 import EmptyState from '../../../components/EmptyState';
+import ThemeToggle from '../../../components/ThemeToggle';
 
 function InstructionsContent() {
   const router = useRouter();
@@ -63,19 +64,22 @@ function InstructionsContent() {
     <div className="min-h-screen bg-background-custom text-text-primary-custom flex flex-col justify-between">
       {/* Header */}
       <header className="border-b border-[#334155]/60 bg-surface-custom/80 sticky top-0 z-30 backdrop-blur-md">
-        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center gap-4">
-          <button 
-            onClick={() => router.back()} 
-            className="text-text-secondary-custom hover:text-text-primary-custom p-1.5 bg-background-custom/40 rounded-lg border border-[#334155]/60 cursor-pointer"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
-            </svg>
-          </button>
-          <div>
-            <h1 className="font-extrabold text-lg text-text-primary-custom">Test Instructions</h1>
-            <p className="text-[10px] text-text-secondary-custom/60 font-bold uppercase tracking-wider">{test.title}</p>
+        <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <button 
+              onClick={() => router.back()} 
+              className="text-text-secondary-custom hover:text-text-primary-custom p-1.5 bg-background-custom/40 rounded-lg border border-[#334155]/60 cursor-pointer"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 19.5 3 12m0 0 7.5-7.5M3 12h18" />
+              </svg>
+            </button>
+            <div>
+              <h1 className="font-extrabold text-lg text-text-primary-custom">Test Instructions</h1>
+              <p className="text-[10px] text-text-secondary-custom/60 font-bold uppercase tracking-wider">{test.title}</p>
+            </div>
           </div>
+          <ThemeToggle />
         </div>
       </header>
 

@@ -11,6 +11,7 @@ import SkeletonLoader from '../../components/SkeletonLoader';
 import EmptyState from '../../components/EmptyState';
 import StatsCard from '../../components/StatsCard';
 import SolutionCard from '../../components/SolutionCard';
+import ThemeToggle from '../../components/ThemeToggle';
 
 function AnalysisContent() {
   const searchParams = useSearchParams();
@@ -110,12 +111,15 @@ function AnalysisContent() {
             </div>
           </div>
 
-          <Link 
-            href="/"
-            className="px-4 py-2 border border-[#334155]/60 text-xs sm:text-sm font-semibold rounded-xl text-text-secondary-custom hover:text-text-primary-custom hover:bg-surface-custom/40 transition-all cursor-pointer"
-          >
-            Dashboard
-          </Link>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <Link 
+              href="/"
+              className="px-4 py-2 border border-[#334155]/60 text-xs sm:text-sm font-semibold rounded-xl text-text-secondary-custom hover:text-text-primary-custom hover:bg-surface-custom/40 transition-all cursor-pointer"
+            >
+              Dashboard
+            </Link>
+          </div>
         </div>
       </header>
 

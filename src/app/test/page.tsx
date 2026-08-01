@@ -12,6 +12,7 @@ import QuestionCard from '../../components/QuestionCard';
 import OptionCard from '../../components/OptionCard';
 import QuestionPalette from '../../components/QuestionPalette';
 import SubmitDialog from '../../components/SubmitDialog';
+import ThemeToggle from '../../components/ThemeToggle';
 import { preload } from 'swr';
 
 function ActiveTestContent() {
@@ -385,6 +386,9 @@ function ActiveTestContent() {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Theme Toggle */}
+            <ThemeToggle />
+
             {/* Timer component */}
             <Timer timeLeft={timeLeft} />
 

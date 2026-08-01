@@ -7,6 +7,7 @@ import { getTestById, getCurrentUser, setCurrentUser, fetchRecentAttemptsFromSup
 import ContinueLearningCard from '../components/ContinueLearningCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import RegistrationModal from '../components/RegistrationModal';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function HomePage() {
   const [currentUser, setUser] = useState<User | null>(null);
@@ -86,25 +87,28 @@ export default function HomePage() {
           </nav>
 
           {/* Profile & Logout Panel */}
-          {currentUser && (
-            <div className="flex items-center gap-3">
-              <div className="flex items-center gap-2 bg-background-custom/40 pl-3 pr-2 py-1 rounded-full border border-[#334155]/60 text-xs font-semibold">
-                <div className="text-text-secondary-custom hidden xs:block">
-                  <span className="text-text-primary-custom font-bold">{currentUser.name}</span>
-                  <span className="text-[10px] text-text-secondary-custom/60 ml-1.5 font-mono">{currentUser.cadetNumber}</span>
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            {currentUser && (
+              <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2.5 text-xs font-semibold">
+                  <div className="text-text-secondary-custom hidden xs:block text-right">
+                    <div className="text-text-primary-custom font-bold">{currentUser.name}</div>
+                    <div className="text-[10px] text-text-secondary-custom/60 font-mono">{currentUser.cadetNumber}</div>
+                  </div>
+                  <div className="w-7 h-7 rounded-full bg-[#dfdcd4] border border-[#c7c4b8] flex items-center justify-center font-bold text-[#111827] shadow-sm select-none">
+                    {currentUser.name[0].toUpperCase()}
+                  </div>
                 </div>
-                <div className="w-7 h-7 rounded-full bg-primary-custom/20 border border-primary-custom/50 flex items-center justify-center font-bold text-primary-custom">
-                  {currentUser.name[0].toUpperCase()}
-                </div>
+                <button
+                  onClick={handleLogout}
+                  className="text-xs text-danger-custom hover:text-danger-custom/80 hover:bg-danger-custom/10 border border-transparent hover:border-danger-custom/30 px-3 py-1.5 rounded-full transition-all cursor-pointer font-bold outline-none"
+                >
+                  Sign Out
+                </button>
               </div>
-              <button
-                onClick={handleLogout}
-                className="text-xs text-danger-custom hover:text-danger-custom/80 hover:bg-danger-custom/10 border border-transparent hover:border-danger-custom/30 px-3 py-1.5 rounded-full transition-all cursor-pointer font-bold outline-none"
-              >
-                Sign Out
-              </button>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </header>
 
