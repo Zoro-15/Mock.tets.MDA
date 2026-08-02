@@ -69,16 +69,29 @@ export default function QuestionPalette({
       )}
 
       {/* Drawer Container */}
-      <div className={`fixed inset-y-0 right-0 w-80 bg-surface-custom border-l border-[#334155] z-50 transform transition-transform duration-300 flex flex-col md:static md:translate-x-0 md:z-0 md:h-[calc(100vh-140px)] md:rounded-2xl ${
+      <div className={`fixed inset-y-0 right-0 w-80 max-w-[85vw] bg-background-custom md:bg-surface-custom border-l border-[#334155] z-50 transform transition-transform duration-300 flex flex-col md:static md:translate-x-0 md:z-0 md:h-[calc(100vh-140px)] md:rounded-2xl shadow-2xl md:shadow-none ${
         isOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'
       }`}>
+        {/* Mobile Header (Close button & title) */}
+        <div className="flex justify-between items-center md:hidden px-5 py-4 border-b border-[#334155]/60 shrink-0 bg-surface-custom/30">
+          <span className="text-sm font-bold text-text-primary-custom">Question Palette</span>
+          <button 
+            onClick={onClose} 
+            className="p-1.5 text-text-secondary-custom hover:text-text-primary-custom bg-surface-custom/50 rounded-lg border border-[#334155]/60 cursor-pointer"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+
         {/* Toggle Grid/List Header */}
-        <div className="flex border-b border-[#334155] text-xs font-semibold select-none flex-shrink-0">
+        <div className="flex border-b border-[#334155] text-xs font-semibold select-none shrink-0">
           <button
             onClick={() => setViewMode('grid')}
             className={`flex-1 py-3 text-center transition-colors outline-none cursor-pointer ${
               viewMode === 'grid' 
-                ? 'text-primary-custom border-b-2 border-primary-custom' 
+                ? 'text-primary-custom border-b-2 border-primary-custom font-bold' 
                 : 'text-text-secondary-custom hover:text-text-primary-custom'
             }`}
           >
@@ -88,7 +101,7 @@ export default function QuestionPalette({
             onClick={() => setViewMode('list')}
             className={`flex-1 py-3 text-center transition-colors outline-none cursor-pointer ${
               viewMode === 'list' 
-                ? 'text-primary-custom border-b-2 border-primary-custom' 
+                ? 'text-primary-custom border-b-2 border-primary-custom font-bold' 
                 : 'text-text-secondary-custom hover:text-text-primary-custom'
             }`}
           >
@@ -98,18 +111,6 @@ export default function QuestionPalette({
 
         {/* Scrollable Content */}
         <div className="flex-1 overflow-y-auto p-5 space-y-6">
-          {/* Mobile Close Button */}
-          <div className="flex justify-between items-center md:hidden border-b border-[#334155]/50 pb-3">
-            <span className="text-sm font-semibold text-text-primary-custom">Question Palette</span>
-            <button 
-              onClick={onClose} 
-              className="p-1 text-text-secondary-custom hover:text-text-primary-custom cursor-pointer"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
 
           {/* Legends */}
           <div className="bg-background-custom/50 border border-[#334155]/30 rounded-xl p-3 space-y-2.5">

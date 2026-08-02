@@ -8,7 +8,6 @@ import ToggleTabs from '../../components/ToggleTabs';
 import TestCard from '../../components/TestCard';
 import SkeletonLoader from '../../components/SkeletonLoader';
 import EmptyState from '../../components/EmptyState';
-import { motion } from 'framer-motion';
 import ThemeToggle from '../../components/ThemeToggle';
 
 export default function PreviousYearPapersPage() {
@@ -90,33 +89,20 @@ export default function PreviousYearPapersPage() {
         {loading ? (
           <SkeletonLoader count={4} />
         ) : filteredTests.length > 0 ? (
-          <motion.div 
-            className="space-y-4"
-            initial="hidden"
-            animate="visible"
-            variants={{
-              visible: { transition: { staggerChildren: 0.05 } }
-            }}
-          >
+          <div className="space-y-4 animate-fadeIn">
             {filteredTests.map((test) => {
               const { status, attemptId } = getTestStatus(test.id);
               return (
-                <motion.div
-                  key={test.id}
-                  variants={{
-                    hidden: { opacity: 0, y: 15 },
-                    visible: { opacity: 1, y: 0 }
-                  }}
-                >
+                <div key={test.id}>
                   <TestCard
                     test={test}
                     status={status}
                     attemptId={attemptId}
                   />
-                </motion.div>
+                </div>
               );
             })}
-          </motion.div>
+          </div>
         ) : (
           <EmptyState title="No Papers Found" message="Could not fetch official papers. Please check back later." />
         )}

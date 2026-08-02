@@ -297,9 +297,9 @@ function AnalysisContent() {
               </div>
             </div>
 
-            {/* NEW: TOPIC INSIGHTS */}
-            <div className="bg-[#1E293B] border border-[#334155]/60 rounded-xl p-6 space-y-5">
-              <h3 className="text-sm font-bold text-[#F8FAFC] uppercase tracking-wider pb-2 border-b border-[#334155]/40">
+            {/* TOPIC INSIGHTS */}
+            <div className="bg-surface-custom border border-[#334155]/60 rounded-xl p-6 space-y-5">
+              <h3 className="text-sm font-bold text-text-primary-custom uppercase tracking-wider pb-2 border-b border-[#334155]/40">
                 Deep Topic Analytics
               </h3>
               
@@ -307,20 +307,20 @@ function AnalysisContent() {
                 {topicInsights.map(insight => (
                   <div key={insight.topic} className="space-y-2">
                     <div className="flex justify-between items-center text-sm font-semibold">
-                      <span className="text-[#F8FAFC]">{insight.topic} <span className="text-xs text-[#CBD5E1]/60 font-mono ml-1">({insight.total} Qs)</span></span>
-                      <span className={insight.accuracy >= 70 ? 'text-[#22C55E]' : insight.accuracy >= 40 ? 'text-[#F59E0B]' : 'text-[#EF4444]'}>
+                      <span className="text-text-primary-custom">{insight.topic} <span className="text-xs text-text-secondary-custom/60 font-mono ml-1">({insight.total} Qs)</span></span>
+                      <span className={insight.accuracy >= 70 ? 'text-success-custom' : insight.accuracy >= 40 ? 'text-warning-custom' : 'text-danger-custom'}>
                         {insight.accuracy}% Accuracy
                       </span>
                     </div>
                     {/* Progress Bar */}
-                    <div className="w-full bg-[#0F172A] rounded-full h-2.5 overflow-hidden flex ring-1 ring-[#334155]/50">
-                      <div className="bg-[#22C55E] transition-all" style={{ width: `${(insight.correct / insight.total) * 100}%` }} title={`Correct: ${insight.correct}`} />
-                      <div className="bg-[#EF4444] transition-all" style={{ width: `${(insight.incorrect / insight.total) * 100}%` }} title={`Incorrect: ${insight.incorrect}`} />
+                    <div className="w-full bg-background-custom rounded-full h-2.5 overflow-hidden flex ring-1 ring-[#334155]/50">
+                      <div className="bg-success-custom transition-all" style={{ width: `${(insight.correct / insight.total) * 100}%` }} title={`Correct: ${insight.correct}`} />
+                      <div className="bg-danger-custom transition-all" style={{ width: `${(insight.incorrect / insight.total) * 100}%` }} title={`Incorrect: ${insight.incorrect}`} />
                     </div>
                     {/* Tiny Stats */}
-                    <div className="flex justify-between text-[10px] font-mono text-[#CBD5E1]/70">
-                      <span className="text-[#22C55E]">{insight.correct} Correct</span>
-                      <span className="text-[#EF4444]">{insight.incorrect} Wrong</span>
+                    <div className="flex justify-between text-[10px] font-mono text-text-secondary-custom/70">
+                      <span className="text-success-custom">{insight.correct} Correct</span>
+                      <span className="text-danger-custom">{insight.incorrect} Wrong</span>
                       <span>{insight.unattempted} Skipped</span>
                     </div>
                   </div>

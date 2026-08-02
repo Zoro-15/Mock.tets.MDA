@@ -14,7 +14,6 @@ import QuestionPalette from '../../components/QuestionPalette';
 import SubmitDialog from '../../components/SubmitDialog';
 import ThemeToggle from '../../components/ThemeToggle';
 import { preload } from 'swr';
-import { motion, AnimatePresence } from 'framer-motion';
 
 function ActiveTestContent() {
   const router = useRouter();
@@ -193,14 +192,18 @@ function ActiveTestContent() {
     const qId = activeQuestion.id;
     const currentResp = responses[qId];
 
+    const isAlreadySelected = currentResp.selectedOptionIndex === optIdx;
+
     const updated = {
       ...responses,
       [qId]: {
         ...currentResp,
-        selectedOptionIndex: optIdx,
-        status: (currentResp.status === 'marked' || currentResp.status === 'marked-attempted')
-          ? 'marked-attempted' as const
-          : 'attempted' as const
+        selectedOptionIndex: isAlreadySelected ? null : optIdx,
+        status: isAlreadySelected
+          ? (currentResp.status === 'marked-attempted' ? 'marked' as const : 'unattempted' as const)
+          : ((currentResp.status === 'marked' || currentResp.status === 'marked-attempted')
+            ? 'marked-attempted' as const
+            : 'attempted' as const)
       }
     };
     
@@ -208,24 +211,22 @@ function ActiveTestContent() {
     saveProgress(updated, timeLeftRef.current, currentIndex);
   }, [activeQuestion, responses, currentIndex, saveProgress]);
 
-  const handleClearResponse = useCallback(() => {
-    if (!activeQuestion) return;
-    const qId = activeQuestion.id;
-    const currentResp = responses[qId];
+  const handlePrevious = useCallback(() => {
+    if (currentIndex <= 0) return;
+    const prevIdx = currentIndex - 1;
+    
+    const updatedResponses = { ...responses };
+    if (activeQuestion) {
+      const qId = activeQuestion.id;
+      updatedResponses[qId] = {
+        ...updatedResponses[qId],
+        timeSpent: timeSpentRef.current[qId] || 0
+      };
+    }
 
-    const updated = {
-      ...responses,
-      [qId]: {
-        ...currentResp,
-        selectedOptionIndex: null,
-        status: currentResp.status === 'marked-attempted'
-          ? 'marked' as const
-          : 'unattempted' as const
-      }
-    };
-
-    setResponses(updated);
-    saveProgress(updated, timeLeftRef.current, currentIndex);
+    setResponses(updatedResponses);
+    setCurrentIndex(prevIdx);
+    saveProgress(updatedResponses, timeLeftRef.current, prevIdx);
   }, [activeQuestion, responses, currentIndex, saveProgress]);
 
   const handleSaveAndNext = useCallback(() => {
@@ -335,7 +336,12 @@ function ActiveTestContent() {
         handleMarkAndNext();
       } else if (key === 'C') {
         e.preventDefault();
-        handleClearResponse();
+        if (activeQuestion) {
+          const sel = responses[activeQuestion.id]?.selectedOptionIndex;
+          if (sel !== null && sel !== undefined) {
+            selectOption(sel);
+          }
+        }
       } else if (key === 'P') {
         e.preventDefault();
         setPaletteOpen(prev => !prev);
@@ -344,7 +350,7 @@ function ActiveTestContent() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [currentIndex, questions, responses, selectOption, handleSaveAndNext, handleMarkAndNext, handleClearResponse]);
+  }, [currentIndex, questions, responses, activeQuestion, selectOption, handleSaveAndNext, handleMarkAndNext]);
 
   if (loading) {
     return (
@@ -376,42 +382,35 @@ function ActiveTestContent() {
   const positiveMarks = test.marks / test.questionsCount;
 
   return (
-    <div className="min-h-screen bg-background-custom text-text-primary-custom flex flex-col justify-between select-none">
+    <div className="min-h-screen bg-background-custom text-text-primary-custom flex flex-col justify-between overflow-x-hidden w-full max-w-full box-border select-none">
       
       {/* Top Navbar */}
-      <header className="border-b border-[#334155]/60 bg-surface-custom/95 backdrop-blur-md sticky top-0 z-40 shadow-md">
+      <header className="border-b border-[#334155]/60 bg-surface-custom/95 backdrop-blur-md sticky top-0 z-40 shadow-md w-full">
         {/* Progress Bar */}
         <div className="absolute top-0 left-0 h-1 bg-primary-custom transition-all duration-500 rounded-r-full" style={{ width: `${(attemptedCount / questions.length) * 100}%` }} />
         
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2 max-w-[60%]">
+        <div className="max-w-7xl mx-auto px-3 sm:px-4 py-2.5 sm:py-3 flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 min-w-0 max-w-[50%] sm:max-w-[65%]">
             <button 
               onClick={handlePause}
-              className="text-text-secondary-custom hover:text-text-primary-custom p-1.5 hover:bg-background-custom/40 rounded-lg cursor-pointer transition-colors"
+              className="text-text-secondary-custom hover:text-text-primary-custom p-1.5 hover:bg-background-custom/40 rounded-lg cursor-pointer transition-colors shrink-0"
               title="Pause test"
             >
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-5 h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 5.25v13.5m-7.5-13.5v13.5" />
               </svg>
             </button>
-            <h1 className="font-bold text-sm sm:text-base text-text-primary-custom truncate" title={test.title}>
+            <h1 className="font-bold text-xs sm:text-sm md:text-base text-text-primary-custom truncate min-w-0" title={test.title}>
               {test.title}
             </h1>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3 shrink-0">
             {/* Theme Toggle */}
             <ThemeToggle />
 
             {/* Timer component */}
             <Timer initialTimeLeft={initialTime} onTick={handleTick} isPaused={loading || !attempt || attempt.completed || submitDialogOpen} />
-
-            {/* Language Placeholder icon */}
-            <div className="w-8 h-8 rounded-lg bg-background-custom/40 border border-[#334155]/60 flex items-center justify-center text-text-secondary-custom" title="English Only">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4.5 h-4.5">
-                <path strokeLinecap="round" strokeLinejoin="round" d="m10.5 21 5.25-11.25L21 21m-9-3h7.5M3 5.621a48.474 48.474 0 0 1 6-.371m0 0c1.12 0 2.233.038 3.334.114M9 5.25V3m3.334 2.364C11.176 10.658 7.69 15.08 3 17.502m9.334-12.138c.896 3.066 2.19 5.752 3.816 7.778" />
-              </svg>
-            </div>
 
             {/* Palette toggle button */}
             <button
@@ -428,85 +427,84 @@ function ActiveTestContent() {
       </header>
 
       {/* Main Grid Section */}
-      <div className="max-w-7xl w-full mx-auto px-4 py-6 flex-1 flex flex-col md:flex-row gap-6">
+      <div className="max-w-7xl w-full mx-auto px-3 sm:px-4 py-4 sm:py-6 flex-1 flex flex-col md:flex-row gap-6 pb-24 md:pb-6 overflow-x-hidden">
         
         {/* Left Side: Question Panel */}
-        <div className="flex-1 flex flex-col justify-between space-y-6 pr-1">
-          <AnimatePresence mode="wait">
-            {activeQuestion ? (
-              <motion.div 
-                key={activeQuestion.id}
-                initial={{ opacity: 0, x: 20 }}
-                animate={{ opacity: 1, x: 0 }}
-                exit={{ opacity: 0, x: -20 }}
-                transition={{ duration: 0.2, ease: "easeOut" }}
-                className="space-y-6"
-              >
-                {/* Section Header */}
-                {activeQuestion.section && (
-                  <div className="bg-surface-custom/70 border border-[#334155]/60 rounded-xl px-4 py-2 inline-flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-primary-custom"></span>
-                    <span className="text-sm font-bold text-text-primary-custom">{activeQuestion.section}</span>
-                  </div>
-                )}
-                {/* Question Card */}
-                <QuestionCard
-                  question={activeQuestion}
-                  questionNumber={currentIndex + 1}
-                  timeSpent={timeSpentRef.current[activeQuestion.id] || 0}
-                  positiveMarks={positiveMarks}
-                  negativeMarks={test.negativeMarking}
-                />
-
-                {/* Answer options */}
-                <div className="grid grid-cols-1 gap-4">
-                  {activeQuestion.options.map((opt, i) => (
-                    <OptionCard
-                      key={i}
-                      label={['A', 'B', 'C', 'D'][i]}
-                      content={opt}
-                      isSelected={responses[activeQuestion.id]?.selectedOptionIndex === i}
-                      onClick={() => selectOption(i)}
-                    />
-                  ))}
+        <div className="flex-1 flex flex-col justify-between space-y-6 min-w-0">
+          {activeQuestion ? (
+            <div 
+              key={activeQuestion.id}
+              className="space-y-6 animate-fadeIn"
+            >
+              {/* Section Header */}
+              {activeQuestion.section && (
+                <div className="bg-surface-custom/70 border border-[#334155]/60 rounded-xl px-4 py-2 inline-flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-primary-custom"></span>
+                  <span className="text-sm font-bold text-text-primary-custom">{activeQuestion.section}</span>
                 </div>
-              </motion.div>
-            ) : (
-              <EmptyState title="End of Test" message="You have navigated past all questions. Open palette to submit." />
-            )}
-          </AnimatePresence>
+              )}
+              {/* Question Card */}
+              <QuestionCard
+                question={activeQuestion}
+                questionNumber={currentIndex + 1}
+                timeSpent={timeSpentRef.current[activeQuestion.id] || 0}
+                positiveMarks={positiveMarks}
+                negativeMarks={test.negativeMarking}
+              />
 
-          {/* Spacer to push buttons down */}
-          <div className="flex-grow" />
+              {/* Answer options */}
+              <div className="grid grid-cols-1 gap-4">
+                {activeQuestion.options.map((opt, i) => (
+                  <OptionCard
+                    key={i}
+                    label={['A', 'B', 'C', 'D'][i]}
+                    content={opt}
+                    isSelected={responses[activeQuestion.id]?.selectedOptionIndex === i}
+                    onClick={() => selectOption(i)}
+                  />
+                ))}
+              </div>
+            </div>
+          ) : (
+            <EmptyState title="End of Test" message="You have navigated past all questions. Open palette to submit." />
+          )}
 
-          {/* Bottom Action Bar */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 border-t border-[#334155]/40 pt-4 bg-background-custom sticky bottom-0 z-20">
-            <div className="flex flex-row items-center gap-3 w-full sm:w-auto">
+          {/* Spacer to push buttons down on desktop */}
+          <div className="hidden md:block flex-grow" />
+
+          {/* Desktop & Tablet Action Bar (contained inside the question column) */}
+          <div className="hidden md:flex items-center justify-between gap-4 border-t border-[#334155]/40 pt-4 bg-background-custom sticky bottom-0 z-20">
+            <div className="flex items-center gap-3">
               <button
-                onClick={handleMarkAndNext}
-                className="flex-1 sm:flex-none px-3 sm:px-5 py-3 bg-warning-custom/10 hover:bg-warning-custom/20 active:scale-95 border border-warning-custom/50 text-warning-custom rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all cursor-pointer outline-none text-center"
+                onClick={handlePrevious}
+                disabled={currentIndex === 0}
+                className={`px-5 py-2.5 border border-[#334155]/60 text-text-primary-custom rounded-xl font-bold text-sm tracking-wide transition-all outline-none text-center ${
+                  currentIndex === 0 
+                    ? 'opacity-40 cursor-not-allowed bg-surface-custom/20' 
+                    : 'hover:bg-surface-custom/60 active:scale-95 cursor-pointer'
+                }`}
               >
-                MARK & NEXT
+                PREVIOUS
               </button>
               <button
-                onClick={handleClearResponse}
-                className="flex-1 sm:flex-none px-3 sm:px-5 py-3 border border-[#334155]/60 text-text-secondary-custom hover:text-text-primary-custom hover:bg-surface-custom/40 rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-colors cursor-pointer outline-none text-center"
+                onClick={handleMarkAndNext}
+                className="px-5 py-2.5 bg-warning-custom/10 hover:bg-warning-custom/20 active:scale-95 border border-warning-custom/50 text-warning-custom rounded-xl font-bold text-sm tracking-wide transition-all cursor-pointer outline-none text-center"
               >
-                CLEAR RESPONSE
+                MARKS & NEXT
               </button>
             </div>
             
             <button
               onClick={handleSaveAndNext}
-              className="w-full sm:w-auto px-6 py-3 bg-primary-custom hover:bg-[#2563EB] active:scale-95 text-white rounded-xl font-bold text-xs sm:text-sm tracking-wide transition-all shadow-md shadow-primary-custom/20 hover:shadow-primary-custom/40 cursor-pointer outline-none text-center"
+              className="px-6 py-2.5 bg-primary-custom hover:bg-[#2563EB] active:scale-95 text-white rounded-xl font-bold text-sm tracking-wide transition-all shadow-md shadow-primary-custom/20 hover:shadow-primary-custom/40 cursor-pointer outline-none text-center"
             >
-              SAVE & NEXT
+              NEXT
             </button>
           </div>
         </div>
 
         {/* Right Side: Palette Panel (pinned on desktop, drawer on mobile) */}
-        <div className="hidden md:block w-80">
+        <div className="hidden md:block w-80 shrink-0">
           <QuestionPalette
             questions={questions}
             responses={responses}
@@ -516,6 +514,40 @@ function ActiveTestContent() {
             isOpen={paletteOpen}
             onClose={() => setPaletteOpen(false)}
           />
+        </div>
+      </div>
+
+      {/* Mobile / Android Fixed Bottom Action Bar (fixed single-line layout) */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-surface-custom/95 backdrop-blur-md border-t border-[#334155]/60 px-2 py-2 shadow-2xl">
+        <div className="flex flex-row items-center justify-between gap-1.5 w-full">
+          {/* PREVIOUS button */}
+          <button
+            onClick={handlePrevious}
+            disabled={currentIndex === 0}
+            className={`flex-1 px-2 py-2.5 border border-[#334155]/60 text-text-primary-custom rounded-xl font-bold text-[11px] tracking-wide transition-all outline-none text-center truncate ${
+              currentIndex === 0 
+                ? 'opacity-40 cursor-not-allowed bg-surface-custom/20' 
+                : 'hover:bg-surface-custom/60 active:scale-95 cursor-pointer'
+            }`}
+          >
+            PREVIOUS
+          </button>
+
+          {/* MARKS & NEXT button */}
+          <button
+            onClick={handleMarkAndNext}
+            className="flex-1 px-2 py-2.5 bg-warning-custom/10 hover:bg-warning-custom/20 active:scale-95 border border-warning-custom/50 text-warning-custom rounded-xl font-bold text-[11px] tracking-wide transition-all cursor-pointer outline-none text-center truncate"
+          >
+            MARKS & NEXT
+          </button>
+
+          {/* NEXT button */}
+          <button
+            onClick={handleSaveAndNext}
+            className="flex-1 px-2 py-2.5 bg-primary-custom hover:bg-[#2563EB] active:scale-95 text-white rounded-xl font-bold text-[11px] tracking-wide transition-all shadow-md shadow-primary-custom/20 hover:shadow-primary-custom/40 cursor-pointer outline-none text-center truncate"
+          >
+            NEXT
+          </button>
         </div>
       </div>
 
