@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Question } from '../lib/types';
 import LatexRenderer from './LatexRenderer';
 
@@ -18,7 +18,23 @@ export default function QuestionCard({
   negativeMarks 
 }: QuestionCardProps) {
   
+  const [localTimeSpent, setLocalTimeSpent] = useState(timeSpent || 0);
+
+  // Sync with prop when question changes
+  useEffect(() => {
+    setLocalTimeSpent(timeSpent || 0);
+  }, [timeSpent, question.id]);
+
+  // Live visual stopwatch
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setLocalTimeSpent(prev => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [question.id]);
+  
   const formatTimeSpent = (secs: number) => {
+    if (isNaN(secs) || secs == null) secs = 0;
     const mins = Math.floor(secs / 60);
     const s = secs % 60;
     return `${mins.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
@@ -36,7 +52,7 @@ export default function QuestionCard({
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
             </svg>
-            <span>Time: {formatTimeSpent(timeSpent)}</span>
+            <span>Time: {formatTimeSpent(localTimeSpent)}</span>
           </div>
         </div>
 
