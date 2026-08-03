@@ -41,14 +41,18 @@ export default function Timer({ initialTimeLeft, onTick, isPaused = false }: Tim
     return `${pad(hrs)}:${pad(mins)}:${pad(secs)}`;
   };
 
-  const isLowTime = timeLeft > 0 && timeLeft < 300; // < 5 minutes
+  const isCriticalTime = timeLeft > 0 && timeLeft < 300; // < 5 minutes
+  const isWarningTime = timeLeft >= 300 && timeLeft < 600; // < 10 minutes
+
+  let timerColorClass = 'bg-surface-custom border-[#334155]/60 text-text-primary-custom';
+  if (isCriticalTime) {
+    timerColorClass = 'bg-danger-custom/10 border-danger-custom text-danger-custom animate-pulse';
+  } else if (isWarningTime) {
+    timerColorClass = 'bg-warning-custom/10 border-warning-custom text-warning-custom';
+  }
 
   return (
-    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border font-mono font-bold text-sm tracking-wide transition-colors ${
-      isLowTime 
-        ? 'bg-danger-custom/10 border-danger-custom text-danger-custom animate-pulse' 
-        : 'bg-surface-custom border-[#334155]/60 text-text-primary-custom'
-    }`}>
+    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border font-mono font-bold text-sm tracking-wide transition-colors ${timerColorClass}`}>
       <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor" className="w-4 h-4">
         <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
       </svg>
