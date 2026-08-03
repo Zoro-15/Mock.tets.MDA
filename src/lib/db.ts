@@ -1,4 +1,4 @@
-import { Test, Attempt, Question, QuestionResponse, LeaderboardEntry, User } from './types';
+import { Test, Attempt, Question, QuestionResponse, LeaderboardEntry, UniversalLeaderboardEntry, User } from './types';
 import { allTests, generateQuestionsForTest } from './mockData';
 import { supabase, isSupabaseConfigured } from './supabaseClient';
 
@@ -502,8 +502,51 @@ export function createAttempt(testId: string): Attempt | null {
   return attempt;
 }
 
-export function getAttempt(attemptId: string): Attempt | null {
+export async function getAttempt(attemptId: string): Promise<Attempt | null> {
   const attempts = getLocalAttempts();
+  
+  if (attempts[attemptId] && Object.keys(attempts[attemptId].responses || {}).length > 0) {
+    return attempts[attemptId];
+  }
+
+  // If not local or responses are missing, fetch from Supabase
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const { data, error } = await supabase
+        .from('test_attempts')
+        .select('*')
+        .eq('id', attemptId)
+        .single();
+        
+      if (!error && data) {
+        const attemptFromDb: Attempt = {
+          id: data.id,
+          testId: data.test_id,
+          responses: data.responses || {},
+          timeLeft: data.completed_at ? 0 : 5400, // rough fallback
+          currentQuestionIndex: 0,
+          completed: data.completed_at !== null,
+          score: Number(data.score),
+          accuracy: Number(data.accuracy),
+          percentile: 85,
+          correctCount: data.correct_count,
+          incorrectCount: data.incorrect_count,
+          unattemptedCount: data.unattempted_count,
+          timeTaken: data.time_taken,
+          startedAt: data.completed_at || new Date().toISOString()
+        };
+        
+        // Cache it locally so it works offline/next time
+        attempts[attemptId] = attemptFromDb;
+        saveLocalAttempts(attempts);
+        
+        return attemptFromDb;
+      }
+    } catch (err) {
+      console.warn('Failed to fetch attempt from Supabase:', err);
+    }
+  }
+
   return attempts[attemptId] || null;
 }
 
@@ -518,7 +561,7 @@ export async function fetchRecentAttemptsFromSupabase(userId: string): Promise<A
     try {
       const { data, error } = await supabase
         .from('test_attempts')
-        .select('*')
+        .select('id, test_id, score, accuracy, correct_count, incorrect_count, unattempted_count, time_taken, completed_at')
         .eq('user_id', userId)
         .order('completed_at', { ascending: false });
 
@@ -527,7 +570,7 @@ export async function fetchRecentAttemptsFromSupabase(userId: string): Promise<A
         return data.map((row: any) => ({
           id: row.id,
           testId: row.test_id,
-          responses: row.responses,
+          responses: {}, // Omitted from network payload to save bandwidth. Will be fetched on demand by getAttempt.
           timeLeft: 0, // not needed for reports
           currentQuestionIndex: 0,
           completed: row.completed_at !== null,
@@ -582,6 +625,65 @@ export async function getLeaderboardForTest(testId: string): Promise<Leaderboard
   }
 
   // Fallback: No real leaderboard data is available yet, return empty list.
+  return [];
+}
+
+export async function getUniversalLeaderboard(): Promise<UniversalLeaderboardEntry[]> {
+  if (isSupabaseConfigured && supabase) {
+    try {
+      const currentUser = getCurrentUser();
+      
+      // Fetch top 10
+      const { data: top10Data, error: top10Error } = await supabase
+        .from('universal_leaderboard')
+        .select('*')
+        .order('rank', { ascending: true })
+        .limit(10);
+
+      if (top10Error) throw top10Error;
+
+      let board: UniversalLeaderboardEntry[] = [];
+      let isUserInTop10 = false;
+
+      if (top10Data && top10Data.length > 0) {
+        board = top10Data.map((row: any) => {
+          const isMe = currentUser ? row.cadet_number === currentUser.cadetNumber : false;
+          if (isMe) isUserInTop10 = true;
+          return {
+            rank: Number(row.rank),
+            name: row.name,
+            cadetNumber: row.cadet_number,
+            testsAttempted: Number(row.tests_attempted),
+            isCurrentUser: isMe
+          };
+        });
+      }
+
+      // If user is not in top 10, fetch their specific rank
+      if (currentUser && !isUserInTop10) {
+        const { data: userData, error: userError } = await supabase
+          .from('universal_leaderboard')
+          .select('*')
+          .eq('cadet_number', currentUser.cadetNumber)
+          .single();
+          
+        if (!userError && userData) {
+          board.push({
+            rank: Number(userData.rank),
+            name: userData.name,
+            cadetNumber: userData.cadet_number,
+            testsAttempted: Number(userData.tests_attempted),
+            isCurrentUser: true
+          });
+        }
+      }
+
+      return board;
+    } catch (err) {
+      console.warn('Failed to fetch Supabase universal leaderboard, using fallback:', err);
+    }
+  }
+
   return [];
 }
 

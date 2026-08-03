@@ -63,6 +63,14 @@ export interface LeaderboardEntry {
   isCurrentUser?: boolean;
 }
 
+export interface UniversalLeaderboardEntry {
+  rank: number;
+  name: string;
+  cadetNumber: string;
+  testsAttempted: number;
+  isCurrentUser?: boolean;
+}
+
 export interface User {
   id: string;
   name: string;

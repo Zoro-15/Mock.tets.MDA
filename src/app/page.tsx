@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Attempt, Test, User } from '../lib/types';
-import { getTestById, getCurrentUser, setCurrentUser, fetchRecentAttemptsFromSupabase } from '../lib/db';
+import { Attempt, Test, User, UniversalLeaderboardEntry } from '../lib/types';
+import { getTestById, getCurrentUser, setCurrentUser, fetchRecentAttemptsFromSupabase, getUniversalLeaderboard } from '../lib/db';
 import ContinueLearningCard from '../components/ContinueLearningCard';
 import LoadingSpinner from '../components/LoadingSpinner';
 import RegistrationModal from '../components/RegistrationModal';
@@ -13,6 +13,7 @@ export default function HomePage() {
   const [currentUser, setUser] = useState<User | null>(null);
   const [unfinishedAttempt, setUnfinishedAttempt] = useState<Attempt | null>(null);
   const [associatedTest, setAssociatedTest] = useState<Test | null>(null);
+  const [leaderboard, setLeaderboard] = useState<UniversalLeaderboardEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
   const loadSessionAndAttempts = async (user: User) => {
@@ -36,13 +37,23 @@ export default function HomePage() {
   };
 
   useEffect(() => {
-    const user = getCurrentUser();
-    setUser(user);
-    if (user) {
-      loadSessionAndAttempts(user);
-    } else {
-      setLoading(false);
-    }
+    const fetchInitialData = async () => {
+      const user = getCurrentUser();
+      setUser(user);
+      if (user) {
+        await loadSessionAndAttempts(user);
+      } else {
+        setLoading(false);
+      }
+      
+      try {
+        const board = await getUniversalLeaderboard();
+        setLeaderboard(board);
+      } catch (err) {
+        console.error('Failed to load universal leaderboard:', err);
+      }
+    };
+    fetchInitialData();
   }, []);
 
   const handleAuthSuccess = () => {
@@ -150,6 +161,56 @@ export default function HomePage() {
             ) : (
               <ContinueLearningCard unfinishedAttempt={unfinishedAttempt} test={associatedTest} />
             )}
+          </section>
+        )}
+
+        {/* Universal Leaderboard Section */}
+        {leaderboard.length > 0 && (
+          <section className="space-y-4">
+            <h2 className="text-lg font-bold text-text-primary-custom flex items-center gap-2">
+              <span className="text-primary-custom">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .981-3.172M5.25 4.236c-.982.143-1.954.317-2.916.52A6.003 6.003 0 0 0 7.73 9.728M5.25 4.236V4.5c0 2.108.966 3.99 2.48 5.228M5.25 4.236V2.721C7.456 2.41 9.71 2.25 12 2.25c2.291 0 4.545.16 6.75.47v1.516M7.73 9.728a6.726 6.726 0 0 0 2.748 1.35m8.272-6.842V4.5c0 2.108-.966 3.99-2.48 5.228m2.48-5.492a46.32 46.32 0 0 1 2.916.52 6.003 6.003 0 0 1-5.395 4.972m0 0a6.726 6.726 0 0 1-2.749 1.35m0 0a6.772 6.772 0 0 1-3.044 0" />
+                </svg>
+              </span>
+              Top Aspirants
+            </h2>
+            <div className="bg-surface-custom border border-[#334155]/40 rounded-xl overflow-hidden shadow-sm">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm text-left">
+                  <thead className="text-xs text-text-secondary-custom uppercase bg-black/20">
+                    <tr>
+                      <th scope="col" className="px-6 py-3 font-semibold w-16 text-center">Rank</th>
+                      <th scope="col" className="px-6 py-3 font-semibold">Aspirant</th>
+                      <th scope="col" className="px-6 py-3 font-semibold text-center">Tests Attempted (&gt;90m)</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#334155]/30">
+                    {leaderboard.map((entry) => (
+                      <tr 
+                        key={entry.rank} 
+                        className={`hover:bg-[#334155]/10 transition-colors ${entry.isCurrentUser ? 'bg-primary-custom/5 border-l-2 border-l-primary-custom' : ''}`}
+                      >
+                        <td className="px-6 py-4 font-bold text-center">
+                          {entry.rank === 1 ? <span className="text-yellow-500">🏆 1</span> : 
+                           entry.rank === 2 ? <span className="text-gray-400">🥈 2</span> : 
+                           entry.rank === 3 ? <span className="text-amber-700">🥉 3</span> : entry.rank}
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className={`font-bold ${entry.isCurrentUser ? 'text-primary-custom' : 'text-text-primary-custom'}`}>
+                            {entry.name} {entry.isCurrentUser && <span className="text-[10px] ml-2 px-2 py-0.5 rounded-full bg-primary-custom/20 text-primary-custom">YOU</span>}
+                          </div>
+                          <div className="text-xs text-text-secondary-custom/70 font-mono mt-0.5">{entry.cadetNumber}</div>
+                        </td>
+                        <td className="px-6 py-4 text-center font-semibold text-text-primary-custom">
+                          {entry.testsAttempted}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </section>
         )}
 
