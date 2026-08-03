@@ -588,16 +588,6 @@ function ActiveTestContent() {
                 NEXT
               </button>
             </div>
-            
-            {/* Keyboard Shortcuts Legend */}
-            <div className="flex justify-center items-center gap-4 text-[11px] text-text-secondary-custom/60 font-mono pb-1">
-              <span title="Select options A to D"><kbd className="bg-surface-custom border border-[#334155]/60 rounded px-1.5 py-0.5 shadow-sm">1-4</kbd> Option</span>
-              <span title="Previous Question"><kbd className="bg-surface-custom border border-[#334155]/60 rounded px-1.5 py-0.5 shadow-sm">←</kbd> Prev</span>
-              <span title="Save & Next"><kbd className="bg-surface-custom border border-[#334155]/60 rounded px-1.5 py-0.5 shadow-sm">→</kbd> Next</span>
-              <span title="Mark for Review"><kbd className="bg-surface-custom border border-[#334155]/60 rounded px-1.5 py-0.5 shadow-sm">↑</kbd> Mark</span>
-              <span title="Clear Response"><kbd className="bg-surface-custom border border-[#334155]/60 rounded px-1.5 py-0.5 shadow-sm">C</kbd> Clear</span>
-              <span title="Toggle Palette"><kbd className="bg-surface-custom border border-[#334155]/60 rounded px-1.5 py-0.5 shadow-sm">P</kbd> Palette</span>
-            </div>
           </div>
         </div>
 
