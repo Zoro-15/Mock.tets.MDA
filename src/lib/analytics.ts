@@ -44,14 +44,45 @@ export function generateSubjectAnalytics(
   insights['Other / Mixed'] = { topic: 'Other / Mixed', total: 0, correct: 0, incorrect: 0, unattempted: 0, timeSpent: 0, accuracy: 0 };
 
   for (const q of questions) {
-    const textToSearch = q.questionText.toLowerCase();
-    let assignedTopic = 'Other / Mixed';
+    // 1. Expand the search surface to include options and explanation
+    const textToSearch = [
+      q.questionText,
+      ...(q.options || []),
+      q.explanation || ''
+    ].join(' ').toLowerCase();
 
-    // Fast keyword lookup
+    let assignedTopic = 'Other / Mixed';
+    let maxScore = 0;
+
+    // 2. Scoring System & Regex Boundaries
     for (const [topic, keywords] of Object.entries(TOPIC_KEYWORDS)) {
-      if (keywords.some(kw => textToSearch.includes(kw))) {
+      let topicScore = 0;
+      
+      for (const kw of keywords) {
+        // Create a safe regex boundary for the keyword
+        const prefix = /^\w/.test(kw) ? '\\b' : '';
+        const suffix = /\w$/.test(kw) ? '\\b' : '';
+        // Escape special regex characters in the keyword
+        const escapedKw = kw.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        
+        try {
+          const regex = new RegExp(`${prefix}${escapedKw}${suffix}`, 'g');
+          const matches = textToSearch.match(regex);
+          if (matches) {
+            // Weight exact matches to prioritize them over fallback
+            topicScore += matches.length * 2; 
+          }
+        } catch (e) {
+          // Fallback for complex characters if regex fails
+          if (textToSearch.includes(kw.toLowerCase())) {
+            topicScore += 1;
+          }
+        }
+      }
+
+      if (topicScore > maxScore) {
+        maxScore = topicScore;
         assignedTopic = topic;
-        break;
       }
     }
 

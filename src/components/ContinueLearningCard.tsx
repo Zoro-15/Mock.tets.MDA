@@ -49,6 +49,18 @@ export default function ContinueLearningCard({ unfinishedAttempt, test }: Contin
         </div>
       </div>
 
+      {/* Motivational Quote Render */}
+      {showQuote && quote && (
+        <div className="p-4 bg-primary-custom/5 border-l-4 border-primary-custom rounded-r-xl italic text-sm text-text-secondary-custom shadow-sm relative group cursor-pointer" onClick={refreshQuote}>
+          <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-0 group-hover:opacity-100 transition-opacity">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-primary-custom/60">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0 3.181 3.183a8.25 8.25 0 0 0 13.803-3.7M4.031 9.865a8.25 8.25 0 0 1 13.803-3.7l3.181 3.182m0-4.991v4.99" />
+            </svg>
+          </div>
+          &quot;{quote}&quot;
+        </div>
+      )}
+
       <div>
         {/* Continue Learning card */}
         {unfinishedAttempt && test ? (

@@ -328,12 +328,15 @@ function ActiveTestContent() {
       if (['1', '2', '3', '4'].includes(key)) {
         e.preventDefault();
         selectOption(parseInt(key) - 1);
-      } else if (key === 'N') {
+      } else if (key === 'ARROWRIGHT') {
         e.preventDefault();
         handleSaveAndNext();
-      } else if (key === 'M') {
+      } else if (key === 'ARROWUP') {
         e.preventDefault();
         handleMarkAndNext();
+      } else if (key === 'ARROWLEFT') {
+        e.preventDefault();
+        handlePrevious();
       } else if (key === 'C') {
         e.preventDefault();
         if (activeQuestion) {
@@ -473,33 +476,48 @@ function ActiveTestContent() {
           <div className="hidden md:block flex-grow" />
 
           {/* Desktop & Tablet Action Bar (contained inside the question column) */}
-          <div className="hidden md:flex items-center justify-between gap-4 border-t border-[#334155]/40 pt-4 bg-background-custom sticky bottom-0 z-20">
-            <div className="flex items-center gap-3">
+          <div className="hidden md:flex flex-col gap-3 border-t border-[#334155]/40 pt-4 bg-background-custom sticky bottom-0 z-20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={handlePrevious}
+                  disabled={currentIndex === 0}
+                  title="Shortcut: Left Arrow (←)"
+                  className={`px-5 py-2.5 border border-[#334155]/60 text-text-primary-custom rounded-xl font-bold text-sm tracking-wide transition-all outline-none text-center ${
+                    currentIndex === 0 
+                      ? 'opacity-40 cursor-not-allowed bg-surface-custom/20' 
+                      : 'hover:bg-surface-custom/60 active:scale-95 cursor-pointer'
+                  }`}
+                >
+                  PREVIOUS
+                </button>
+                <button
+                  onClick={handleMarkAndNext}
+                  title="Shortcut: Up Arrow (↑)"
+                  className="px-5 py-2.5 bg-warning-custom/10 hover:bg-warning-custom/20 active:scale-95 border border-warning-custom/50 text-warning-custom rounded-xl font-bold text-sm tracking-wide transition-all cursor-pointer outline-none text-center"
+                >
+                  MARKS & NEXT
+                </button>
+              </div>
+              
               <button
-                onClick={handlePrevious}
-                disabled={currentIndex === 0}
-                className={`px-5 py-2.5 border border-[#334155]/60 text-text-primary-custom rounded-xl font-bold text-sm tracking-wide transition-all outline-none text-center ${
-                  currentIndex === 0 
-                    ? 'opacity-40 cursor-not-allowed bg-surface-custom/20' 
-                    : 'hover:bg-surface-custom/60 active:scale-95 cursor-pointer'
-                }`}
+                onClick={handleSaveAndNext}
+                title="Shortcut: Right Arrow (→)"
+                className="px-6 py-2.5 bg-primary-custom hover:bg-[#2563EB] active:scale-95 text-white rounded-xl font-bold text-sm tracking-wide transition-all shadow-md shadow-primary-custom/20 hover:shadow-primary-custom/40 cursor-pointer outline-none text-center"
               >
-                PREVIOUS
-              </button>
-              <button
-                onClick={handleMarkAndNext}
-                className="px-5 py-2.5 bg-warning-custom/10 hover:bg-warning-custom/20 active:scale-95 border border-warning-custom/50 text-warning-custom rounded-xl font-bold text-sm tracking-wide transition-all cursor-pointer outline-none text-center"
-              >
-                MARKS & NEXT
+                NEXT
               </button>
             </div>
             
-            <button
-              onClick={handleSaveAndNext}
-              className="px-6 py-2.5 bg-primary-custom hover:bg-[#2563EB] active:scale-95 text-white rounded-xl font-bold text-sm tracking-wide transition-all shadow-md shadow-primary-custom/20 hover:shadow-primary-custom/40 cursor-pointer outline-none text-center"
-            >
-              NEXT
-            </button>
+            {/* Keyboard Shortcuts Legend */}
+            <div className="flex justify-center items-center gap-4 text-[11px] text-text-secondary-custom/60 font-mono pb-1">
+              <span title="Select options A to D"><kbd className="bg-surface-custom border border-[#334155]/60 rounded px-1.5 py-0.5 shadow-sm">1-4</kbd> Option</span>
+              <span title="Previous Question"><kbd className="bg-surface-custom border border-[#334155]/60 rounded px-1.5 py-0.5 shadow-sm">←</kbd> Prev</span>
+              <span title="Save & Next"><kbd className="bg-surface-custom border border-[#334155]/60 rounded px-1.5 py-0.5 shadow-sm">→</kbd> Next</span>
+              <span title="Mark for Review"><kbd className="bg-surface-custom border border-[#334155]/60 rounded px-1.5 py-0.5 shadow-sm">↑</kbd> Mark</span>
+              <span title="Clear Response"><kbd className="bg-surface-custom border border-[#334155]/60 rounded px-1.5 py-0.5 shadow-sm">C</kbd> Clear</span>
+              <span title="Toggle Palette"><kbd className="bg-surface-custom border border-[#334155]/60 rounded px-1.5 py-0.5 shadow-sm">P</kbd> Palette</span>
+            </div>
           </div>
         </div>
 
