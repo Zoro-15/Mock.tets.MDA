@@ -633,54 +633,80 @@ export async function getUniversalLeaderboard(): Promise<UniversalLeaderboardEnt
     try {
       const currentUser = getCurrentUser();
       
-      // Fetch top 10
-      const { data: top10Data, error: top10Error } = await supabase
-        .from('universal_leaderboard')
-        .select('*')
-        .order('rank', { ascending: true })
-        .limit(10);
+      // Since we don't have the SQL View, we will fetch all valid attempts 
+      // and aggregate them on the client side.
+      // This is okay for an MVP, but can be a bottleneck as data grows.
+      const { data, error } = await supabase
+        .from('test_attempts')
+        .select(`
+          user_id,
+          users (
+            name,
+            cadet_number
+          )
+        `)
+        .gte('time_taken', 5400)
+        .not('completed_at', 'is', null);
 
-      if (top10Error) throw top10Error;
+      if (error) throw error;
 
-      let board: UniversalLeaderboardEntry[] = [];
-      let isUserInTop10 = false;
+      // Client-side aggregation
+      const userStats: Record<string, { name: string, cadetNumber: string, count: number }> = {};
 
-      if (top10Data && top10Data.length > 0) {
-        board = top10Data.map((row: any) => {
-          const isMe = currentUser ? row.cadet_number === currentUser.cadetNumber : false;
-          if (isMe) isUserInTop10 = true;
-          return {
-            rank: Number(row.rank),
-            name: row.name,
-            cadetNumber: row.cadet_number,
-            testsAttempted: Number(row.tests_attempted),
-            isCurrentUser: isMe
-          };
+      if (data) {
+        data.forEach((row: any) => {
+          // Handle potential array wrapping if Supabase returns users as an array
+          const userData = Array.isArray(row.users) ? row.users[0] : row.users;
+          
+          if (!userData) return; // Skip if no user found
+          
+          const cadetNumber = userData.cadet_number;
+          if (!userStats[cadetNumber]) {
+            userStats[cadetNumber] = {
+              name: userData.name,
+              cadetNumber: cadetNumber,
+              count: 0
+            };
+          }
+          userStats[cadetNumber].count += 1;
         });
       }
 
-      // If user is not in top 10, fetch their specific rank
+      // Convert to array, sort by count DESC, name ASC
+      const sortedUsers = Object.values(userStats).sort((a, b) => {
+        if (b.count !== a.count) {
+          return b.count - a.count; // DESC
+        }
+        return a.name.localeCompare(b.name); // ASC
+      });
+
+      // Calculate ranks (handling ties if needed, but simple rank is index + 1)
+      const fullLeaderboard = sortedUsers.map((user, index) => {
+        const isMe = currentUser ? user.cadetNumber === currentUser.cadetNumber : false;
+        return {
+          rank: index + 1,
+          name: user.name,
+          cadetNumber: user.cadetNumber,
+          testsAttempted: user.count,
+          isCurrentUser: isMe
+        };
+      });
+
+      // Extract top 10
+      let board = fullLeaderboard.slice(0, 10);
+      let isUserInTop10 = board.some(entry => entry.isCurrentUser);
+
+      // If user is not in top 10, find them and append
       if (currentUser && !isUserInTop10) {
-        const { data: userData, error: userError } = await supabase
-          .from('universal_leaderboard')
-          .select('*')
-          .eq('cadet_number', currentUser.cadetNumber)
-          .single();
-          
-        if (!userError && userData) {
-          board.push({
-            rank: Number(userData.rank),
-            name: userData.name,
-            cadetNumber: userData.cadet_number,
-            testsAttempted: Number(userData.tests_attempted),
-            isCurrentUser: true
-          });
+        const userEntry = fullLeaderboard.find(entry => entry.cadetNumber === currentUser.cadetNumber);
+        if (userEntry) {
+          board.push(userEntry);
         }
       }
 
       return board;
     } catch (err) {
-      console.warn('Failed to fetch Supabase universal leaderboard, using fallback:', err);
+      console.warn('Failed to fetch Supabase universal leaderboard (client aggregation):', err);
     }
   }
 
