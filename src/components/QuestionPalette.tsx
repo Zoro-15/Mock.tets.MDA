@@ -22,6 +22,15 @@ export default function QuestionPalette({
 }: QuestionPaletteProps) {
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
 
+  const groupedQuestions = React.useMemo(() => {
+    return questions.reduce((acc, q, idx) => {
+      const sec = q.section || 'Questions';
+      if (!acc[sec]) acc[sec] = [];
+      acc[sec].push({ q, idx });
+      return acc;
+    }, {} as Record<string, { q: Question; idx: number }[]>);
+  }, [questions]);
+
   // Helpers to count states
   const list = Object.values(responses);
   const attemptedCount = list.filter(r => r.selectedOptionIndex !== null && r.status !== 'marked').length;
@@ -141,12 +150,7 @@ export default function QuestionPalette({
             
             {viewMode === 'grid' ? (
               <div className="space-y-6">
-                {Object.entries(questions.reduce((acc, q, idx) => {
-                  const sec = q.section || 'Questions';
-                  if (!acc[sec]) acc[sec] = [];
-                  acc[sec].push({ q, idx });
-                  return acc;
-                }, {} as Record<string, { q: Question; idx: number }[]>)).map(([sectionName, sectionQuestions]) => (
+                {Object.entries(groupedQuestions).map(([sectionName, sectionQuestions]) => (
                   <div key={sectionName}>
                     {sectionName !== 'Questions' && (
                       <h5 className="text-[11px] font-bold text-primary-custom mb-3 border-b border-primary-custom/30 pb-1">{sectionName}</h5>
@@ -175,12 +179,7 @@ export default function QuestionPalette({
               </div>
             ) : (
               <div className="space-y-6">
-                {Object.entries(questions.reduce((acc, q, idx) => {
-                  const sec = q.section || 'Questions';
-                  if (!acc[sec]) acc[sec] = [];
-                  acc[sec].push({ q, idx });
-                  return acc;
-                }, {} as Record<string, { q: Question; idx: number }[]>)).map(([sectionName, sectionQuestions]) => (
+                {Object.entries(groupedQuestions).map(([sectionName, sectionQuestions]) => (
                   <div key={sectionName} className="space-y-2">
                     {sectionName !== 'Questions' && (
                       <h5 className="text-[11px] font-bold text-primary-custom mb-2 border-b border-primary-custom/30 pb-1">{sectionName}</h5>

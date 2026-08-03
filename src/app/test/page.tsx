@@ -434,7 +434,7 @@ function ActiveTestContent() {
     <div className="min-h-screen bg-background-custom text-text-primary-custom flex flex-col justify-between overflow-x-hidden w-full max-w-full box-border select-none">
       
       {/* Top Navbar */}
-      <header className="border-b border-[#334155]/60 bg-surface-custom/95 backdrop-blur-md sticky top-0 z-40 shadow-md w-full">
+      <header className="border-b border-[#334155]/60 bg-surface-custom/95 sticky top-0 z-40 shadow-md w-full">
         {/* Progress Bar */}
         <div className="absolute top-0 left-0 h-1 bg-primary-custom transition-all duration-500 rounded-r-full" style={{ width: `${(attemptedCount / questions.length) * 100}%` }} />
         
@@ -618,7 +618,7 @@ function ActiveTestContent() {
       </div>
 
       {/* Mobile / Android Fixed Bottom Action Bar (fixed single-line layout) */}
-      <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-surface-custom/95 backdrop-blur-md border-t border-[#334155]/60 px-2 py-2 shadow-2xl">
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-surface-custom/95 border-t border-[#334155]/60 px-2 py-2 shadow-2xl">
         <div className="flex flex-row items-center justify-between gap-1.5 w-full">
           {/* PREVIOUS button */}
           <button

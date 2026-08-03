@@ -10,28 +10,19 @@ interface QuestionCardProps {
   negativeMarks: number;
 }
 
-export default function QuestionCard({ 
-  question, 
-  questionNumber, 
-  timeSpent, 
-  positiveMarks, 
-  negativeMarks 
-}: QuestionCardProps) {
-  
-  const [localTimeSpent, setLocalTimeSpent] = useState(timeSpent || 0);
+const LiveStopwatch = ({ initialTime, questionId }: { initialTime: number, questionId: string }) => {
+  const [localTimeSpent, setLocalTimeSpent] = useState(initialTime || 0);
 
-  // Sync with prop when question changes
   useEffect(() => {
-    setLocalTimeSpent(timeSpent || 0);
-  }, [timeSpent, question.id]);
+    setLocalTimeSpent(initialTime || 0);
+  }, [initialTime, questionId]);
 
-  // Live visual stopwatch
   useEffect(() => {
     const timer = setInterval(() => {
       setLocalTimeSpent(prev => prev + 1);
     }, 1000);
     return () => clearInterval(timer);
-  }, [question.id]);
+  }, [questionId]);
   
   const formatTimeSpent = (secs: number) => {
     if (isNaN(secs) || secs == null) secs = 0;
@@ -39,6 +30,19 @@ export default function QuestionCard({
     const s = secs % 60;
     return `${mins.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
+
+  return <span>Time: {formatTimeSpent(localTimeSpent)}</span>;
+};
+
+export default function QuestionCard({ 
+  question, 
+  questionNumber, 
+  timeSpent, 
+  positiveMarks, 
+  negativeMarks 
+}: QuestionCardProps) {
+
+
 
   return (
     <div className="w-full bg-surface-custom/70 border border-[#334155]/60 rounded-2xl p-6 space-y-5">
@@ -52,7 +56,7 @@ export default function QuestionCard({
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3.5 h-3.5">
               <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
             </svg>
-            <span>Time: {formatTimeSpent(localTimeSpent)}</span>
+            <LiveStopwatch initialTime={timeSpent} questionId={question.id} />
           </div>
         </div>
 
